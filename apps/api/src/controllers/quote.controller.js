@@ -1,5 +1,5 @@
 import { QuoteRequestInput } from "../validators/quoteRequest.schema.js";
-import { QuoteRequest } from "../models/quoteRequest.js"; // ajuste le chemin
+import {QuoteRequest} from "../models/QuoteRequest.js";
 import { sendQuoteEmailToTeam /*, sendAutoAckToClient */ } from "../services/mailer.js";
 
 export async function createQuoteRequest(req, res) {
