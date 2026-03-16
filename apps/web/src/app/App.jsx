@@ -1,7 +1,7 @@
 import { Routes, Route ,useLocation} from "react-router-dom";
 import { routes } from "./routes.jsx";
 import Footer from "../components/layout/Footer.jsx";
-import Navbar from "../components/layout/NavBar.jsx";
+import Navbar from "../components/layout/Navbar.jsx";
 import MentionsLegales from "../pages/MentionsLegales.jsx"
 import ScrollToTop from "../components/utils/ScrollToTop.jsx";
 import { Helmet } from "react-helmet-async";
