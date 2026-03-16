@@ -1,0 +1,18 @@
+{
+  "name": "ronna-group",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+  "dev": "concurrently -n web,api -c auto \"npm run dev -w @ronna/web -- --host\" \"npm run dev -w @ronna/api\"",
+  "dev:web": "npm run dev -w @ronna/web",
+  "dev:api": "npm run dev -w @ronna/api",
+  "build": "npm run build -w @ronna/web && npm run build -w @ronna/api",
+  "lint": "npm run lint -w @ronna/web && npm run lint -w @ronna/api"
+},
+
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
