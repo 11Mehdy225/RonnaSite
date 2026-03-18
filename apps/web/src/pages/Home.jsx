@@ -2,7 +2,7 @@ import HeroVortex from "../components/hero/HeroVortex.jsx";
 import ServicesBanners from "../components/home/ServicesBanners.jsx";
 import ContactTeaser from "../components/home/ContactTeaser.jsx";
 import { useEffect } from "react";
-import SEO from "../components/SEO"; 
+import SEO from "../components/SEO.jsx"; 
 
 export default function Home() {
   useEffect(() => {

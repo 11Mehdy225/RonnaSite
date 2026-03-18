@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import mission09 from "../assets/fondation/mission09.PNG";
+import mission09 from "../assets/fondation/mission09.png";
 import SEO from "../components/SEO"; 
 function toDateLabel(iso) {
   if (!iso) return "—";
