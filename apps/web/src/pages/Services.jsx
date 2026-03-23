@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import s1 from "../assets/brands/services/ronnastudio.jpg";
+import s1 from "../assets/brands/services/ronnastudio.png";
 import s2 from "../assets/brands/services/web.PNG";
 import s3 from "../assets/brands/services/tv.PNG";
 import s4 from "../assets/brands/services/dev.PNG";
