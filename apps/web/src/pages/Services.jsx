@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import s1 from "../assets/brands/services/digital.PNG";
+import s1 from "../assets/brands/services/ronnastudio.jpg";
 import s2 from "../assets/brands/services/web.PNG";
 import s3 from "../assets/brands/services/tv.PNG";
 import s4 from "../assets/brands/services/dev.PNG";
 import s5 from "../assets/brands/services/audit.PNG";
 import s6 from "../assets/brands/services/sec.PNG";
-import s7 from "../assets/brands/services/ronnastudio.jpg";
+import s7 from "../assets/brands/services/digital.PNG";
 import s8 from "../assets/brands/services/cons.PNG";
 import SEO from "../components/SEO"; 
 
