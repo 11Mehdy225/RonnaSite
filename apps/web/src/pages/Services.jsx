@@ -84,7 +84,7 @@ export default function Services() {
   const items = useMemo(
     () => [
       {
-        code: "RONNA_DIGITAL",
+        code: "RONNA_STUDIO",
         category: "Digital",
         title: "Ronna Digital",
         image: s1,
