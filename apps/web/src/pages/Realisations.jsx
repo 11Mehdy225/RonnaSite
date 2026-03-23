@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SEO from "../components/SEO"; 
+import { apiUrl } from "../lib/api.js";
 
 const CATEGORIES = [
   { value: "TOUT", label: "Tout" },
@@ -44,7 +45,7 @@ export default function Realisations() {
       setLoading(true);
       setErr(null);
       try {
-        const res = await fetch(`/api/projects?${query}`);
+        const res = await fetch(apiUrl(`/api/projects?${query}`));
         const json = await res.json().catch(() => ({}));
         if (!res.ok || json?.ok === false)
           throw new Error(json?.message || "Erreur chargement projets");

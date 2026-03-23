@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SEO from "../components/SEO"; 
+import { apiUrl } from "../lib/api.js";
 
 
 const CATEGORIES = [
@@ -72,7 +73,7 @@ export default function Actualites() {
       setError(null);
 
       try {
-        const res = await fetch(`/api/news?${query}`);
+        const res = await fetch(apiUrl(`/api/news?${query}`));
         const json = await res.json().catch(() => ({}));
 
         if (!res.ok || json?.ok === false) {

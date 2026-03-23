@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import mission09 from "../assets/fondation/mission09.png";
 import SEO from "../components/SEO.jsx"; 
+import { apiUrl } from "../lib/api.js";
+
 function toDateLabel(iso) {
   if (!iso) return "—";
   try {
@@ -72,7 +74,7 @@ export default function Fondation() {
         setLoadingActions(true);
         setErrorActions(null);
 
-        const res = await fetch("/api/foundation/actions");
+        const res = await fetch(apiUrl("/api/foundation/actions"));
         const json = await res.json().catch(() => ({}));
 
         if (!res.ok || json?.ok === false) {

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import SEO from "../components/SEO"; 
+import { apiUrl } from "../lib/api.js";
 
 
 const SERVICE_OPTIONS = [
@@ -280,7 +281,7 @@ const onSubmit = async (ev) => {
   honeypot: data.honeypot || ""
 };
 
-const res = await fetch("/api/contact", {
+const res = await fetch(apiUrl("/api/contact"), {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(payload)

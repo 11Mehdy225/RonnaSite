@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { apiUrl } from "../../lib/api.js";
 
 export default function RequireAdmin({ children }) {
   const nav = useNavigate();
@@ -11,7 +12,7 @@ export default function RequireAdmin({ children }) {
 
     (async () => {
       try {
-        const res = await fetch("/api/admin/auth/me", { credentials: "include" });
+        const res = await fetch(apiUrl("/api/admin/auth/me", { credentials: "include" }));
         if (!alive) return;
 
         if (!res.ok) {
