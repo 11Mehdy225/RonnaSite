@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import p1 from "../assets/groupe/fondateur-1..JPG";
-import p2 from "../assets/groupe/fondateur-2.JPG";
-import p3 from "../assets/groupe/fondateur-3.JPG";
+import p1 from "../assets/groupe/loic1.JPG";
+import p2 from "../assets/groupe/loic2.JPG";
+import p3 from "../assets/groupe/loic3.JPG";
 import badgePmp from "../assets/badges/pmp.png";
 import badgePspo from "../assets/badges/pspo.png";
 
