@@ -57,7 +57,7 @@ const LoginSchema = z.object({
 });
 
 function getCookieOptions() {
-  const secure = String(process.env.COOKIE_SECURE || "false") === "true";
+  const secure = process.env.NODE_ENV === "production" || String(process.env.COOKIE_SECURE || "false") === "true";
   const sameSite = (process.env.COOKIE_SAMESITE || "lax"); // "lax" | "strict" | "none"
   const days = Number(process.env.COOKIE_MAX_AGE_DAYS || 7);
 

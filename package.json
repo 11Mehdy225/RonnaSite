@@ -1,6 +1,7 @@
 {
   "name": "ronna-group",
   "private": true,
+  "type": "module",
   "workspaces": [
     "apps/*"
   ],

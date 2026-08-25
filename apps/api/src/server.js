@@ -1,7 +1,7 @@
+import "dotenv/config";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
-import dotenv from "dotenv";
 import { connectMongo, closeMongo, getDb } from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -19,13 +19,6 @@ import adminNewsRoutes from "./routes/admin.news.routes.js";
 import adminProjectsRoutes from "./routes/admin.projects.routes.js";
 import adminUploadRoutes from "./routes/admin.upload.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
-
-
-
-dotenv.config();
-console.log("[ENV CHECK] cwd =", process.cwd());
-console.log("[ENV CHECK] BREVO_SMTP_HOST =", process.env.BREVO_SMTP_HOST);
-console.log("[ENV CHECK] SMTP_HOST =", process.env.SMTP_HOST);
 
 const app = express();
 /* ─────────────────────────────────────
@@ -51,24 +44,41 @@ app.use(express.urlencoded({ extended: true, limit: "200kb" }));
 /* ─────────────────────────────────────
    4️⃣ CORS
 ───────────────────────────────────── */
-const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:5173")
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
   .map((s) => s.trim());
 
 app.use(
-  cors({
-    origin: (origin, cb) => {
-      if (!origin) return cb(null, true); // Postman, curl
-      if (allowedOrigins.includes(origin)) return cb(null, true);
-      return cb(new Error("Not allowed by CORS"), false);
-    },
-    credentials: true,
+  cors((req, cb) => {
+    const origin = req.get("origin");
+    const forwardedProto = req.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const protocol = forwardedProto || req.protocol;
+    const host = req.get("x-forwarded-host") || req.get("host");
+    const requestOrigin = host ? `${protocol}://${host}` : "";
+    const originAllowed = !origin || allowedOrigins.includes(origin) || origin === requestOrigin;
+
+    cb(null, {
+      origin: originAllowed,
+      credentials: true,
+    });
   })
 );
 
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.disable("x-powered-by");
+
+// Vercel réutilise la connexion entre deux invocations quand l'instance reste
+// chaude. Ce middleware garantit aussi que toutes les routes voient une DB prête.
+app.use("/api", async (req, res, next) => {
+  try {
+    await connectMongo();
+    next();
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    res.status(503).json({ ok: false, message: "Base de données indisponible" });
+  }
+});
 
 /* ─────────────────────────────────────
    5️⃣ GLOBAL RATE LIMIT (soft)
@@ -134,10 +144,13 @@ async function start() {
   app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
 }
 
-start().catch((err) => {
-  console.error("Failed to start API:", err);
-  process.exit(1);
-});
+const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filename;
+if (isDirectRun) {
+  start().catch((err) => {
+    console.error("Failed to start API:", err);
+    process.exit(1);
+  });
+}
 
 // Fermeture propre
 process.on("SIGINT", async () => {

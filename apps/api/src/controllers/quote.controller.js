@@ -1,5 +1,5 @@
 import { QuoteRequestInput } from "../validators/quoteRequest.schema.js";
-import {QuoteRequest} from "../models/QuoteRequest.js";
+import { getDb } from "../config/db.js";
 import { sendQuoteEmailToTeam /*, sendAutoAckToClient */ } from "../services/mailer.js";
 
 export async function createQuoteRequest(req, res) {
@@ -30,18 +30,28 @@ export async function createQuoteRequest(req, res) {
     userAgent: req.headers["user-agent"] || undefined,
   };
 
-  const created = await QuoteRequest.create(doc);
-
-  // Email (ne bloque pas la réponse)
   try {
-    await sendQuoteEmailToTeam({ ...doc, _id: created._id });
-    // await sendAutoAckToClient({ ...doc, _id: created._id });
-  } catch (e) {
-    console.error("MAIL_ERROR", e);
-  }
+    const now = new Date();
+    const result = await getDb().collection("quote_requests").insertOne({
+      ...doc,
+      createdAt: now,
+      updatedAt: now,
+    });
 
-  return res.status(201).json({
-    ok: true,
-    requestId: created._id.toString(),
-  });
+    // Email (ne bloque pas la réponse)
+    try {
+      await sendQuoteEmailToTeam({ ...doc, _id: result.insertedId });
+      // await sendAutoAckToClient({ ...doc, _id: result.insertedId });
+    } catch (e) {
+      console.error("MAIL_ERROR", e);
+    }
+
+    return res.status(201).json({
+      ok: true,
+      requestId: result.insertedId.toString(),
+    });
+  } catch (error) {
+    console.error("POST /api/quotes error:", error);
+    return res.status(500).json({ ok: false, message: "Erreur serveur" });
+  }
 }

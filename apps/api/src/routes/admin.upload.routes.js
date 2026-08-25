@@ -7,8 +7,11 @@ import { requireAdminCsrf } from "../middleware/adminCsrf.js";
 
 const router = express.Router();
 
+const isVercel = Boolean(process.env.VERCEL);
 const UPLOAD_DIR = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+if (!isVercel && !fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
@@ -28,8 +31,15 @@ const upload = multer({
   }
 });
 
+const uploadSingle = isVercel
+  ? (req, res) => res.status(503).json({
+      ok: false,
+      message: "L’upload d’images nécessite un stockage persistant en production.",
+    })
+  : upload.single("file");
+
 // POST /api/admin/upload (form-data: file)
-router.post("/admin/upload", requireAdmin,requireAdminCsrf, upload.single("file"), async (req, res) => {
+router.post("/admin/upload", requireAdmin, requireAdminCsrf, uploadSingle, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ ok: false, message: "Fichier requis." });
 
