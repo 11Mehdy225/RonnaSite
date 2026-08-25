@@ -246,7 +246,7 @@ export default function AdminNews() {
 
       setItems(json.items || []);
     } catch {
-      setErr("Erreur réseau. Vérifie que l’API tourne.");
+      setErr("Le service d’administration est momentanément indisponible.");
     } finally {
       setLoading(false);
     }

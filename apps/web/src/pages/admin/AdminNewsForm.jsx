@@ -595,7 +595,7 @@
 //   },
 // };
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -610,6 +610,7 @@ const CATEGORY_OPTIONS = [
   { value: "MEDIA", label: "Média" },
   { value: "EVENEMENT", label: "Événement" },
   { value: "PROJET", label: "Projet" },
+  { value: "FONDATION", label: "Fondation" },
 ];
 
 export default function AdminNewsForm({ mode = "create" }) {
@@ -621,6 +622,7 @@ export default function AdminNewsForm({ mode = "create" }) {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState(null);
   const [notice, setNotice] = useState(null);
+  const [, setEditorRevision] = useState(0);
 
   // Meta
   const [title, setTitle] = useState("");
@@ -647,6 +649,7 @@ export default function AdminNewsForm({ mode = "create" }) {
       }),
     ],
     content: "",
+    onUpdate: () => setEditorRevision((value) => value + 1),
     editorProps: {
       attributes: {
         style:
@@ -655,14 +658,11 @@ export default function AdminNewsForm({ mode = "create" }) {
     },
   });
 
-  const canSubmit = useMemo(() => {
-    const html = editor?.getHTML?.() || "";
-    return (
-      title.trim().length >= 3 &&
-      excerpt.trim().length >= 10 &&
-      stripHtml(html).trim().length >= 20
-    );
-  }, [title, excerpt, editor]);
+  const editorHtml = editor?.getHTML?.() || "";
+  const canSubmit =
+    title.trim().length >= 3 &&
+    excerpt.trim().length >= 10 &&
+    stripHtml(editorHtml).trim().length >= 20;
 
   // ✅ Load en edit via endpoint admin /:id
   useEffect(() => {
@@ -707,8 +707,7 @@ export default function AdminNewsForm({ mode = "create" }) {
     console.error(e);
     setErr(e?.message || "Erreur de chargement.");
   } finally {
-    if (!alive) 
-    setLoading(false);
+    if (alive) setLoading(false);
   }
 };
 

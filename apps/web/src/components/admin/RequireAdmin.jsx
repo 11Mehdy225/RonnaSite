@@ -12,7 +12,7 @@ export default function RequireAdmin({ children }) {
 
     (async () => {
       try {
-        const res = await fetch(apiUrl("/api/admin/auth/me", { credentials: "include" }));
+        const res = await fetch(apiUrl("/api/admin/auth/me"), { credentials: "include" });
         if (!alive) return;
 
         if (!res.ok) {

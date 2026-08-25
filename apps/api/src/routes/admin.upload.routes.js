@@ -1,29 +1,14 @@
 import express from "express";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { GridFSBucket } from "mongodb";
+import { getDb } from "../config/db.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
 
 const router = express.Router();
 
-const isVercel = Boolean(process.env.VERCEL);
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
-if (!isVercel && !fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname || "").toLowerCase();
-    const safeExt = [".png", ".jpg", ".jpeg", ".webp"].includes(ext) ? ext : ".jpg";
-    cb(null, `rg_${Date.now()}_${Math.random().toString(16).slice(2)}${safeExt}`);
-  }
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 6 * 1024 * 1024 }, // 6MB
   fileFilter: (req, file, cb) => {
     const ok = ["image/png", "image/jpeg", "image/webp"].includes(file.mimetype);
@@ -31,25 +16,29 @@ const upload = multer({
   }
 });
 
-const uploadSingle = isVercel
-  ? (req, res) => res.status(503).json({
-      ok: false,
-      message: "L’upload d’images nécessite un stockage persistant en production.",
-    })
-  : upload.single("file");
-
 // POST /api/admin/upload (form-data: file)
-router.post("/admin/upload", requireAdmin, requireAdminCsrf, uploadSingle, async (req, res) => {
+router.post("/admin/upload", requireAdmin, requireAdminCsrf, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ ok: false, message: "Fichier requis." });
 
-    // URL accessible depuis le front (vite proxy -> api)
-    const url = `/uploads/${req.file.filename}`;
+    const bucket = new GridFSBucket(getDb(), { bucketName: "media" });
+    const filename = `rg_${Date.now()}_${req.file.originalname || "image"}`;
+    const stream = bucket.openUploadStream(filename, {
+      metadata: { contentType: req.file.mimetype },
+    });
+
+    await new Promise((resolve, reject) => {
+      stream.once("finish", resolve);
+      stream.once("error", reject);
+      stream.end(req.file.buffer);
+    });
+
+    const url = `/api/media/${stream.id}`;
 
     res.json({
       ok: true,
       url,
-      filename: req.file.filename,
+      filename,
       size: req.file.size,
       mimetype: req.file.mimetype
     });

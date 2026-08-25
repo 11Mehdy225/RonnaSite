@@ -72,7 +72,7 @@ export default function AdminLogin() {
     nav("/admin/quotes", { replace: true });
   } catch (e) {
     console.error(e);
-    setErr("Erreur réseau. Vérifie que l’API tourne (localhost:4000).");
+    setErr("Erreur réseau. Le service d’administration est momentanément indisponible.");
   } finally {
     setLoading(false);
   }

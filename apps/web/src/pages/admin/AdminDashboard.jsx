@@ -2,9 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 export default function AdminDashboard() {
-  const token = localStorage.getItem("rg_admin_token");
-
-  const [stats, setStats] = useState({ quotes: 0, news: 0, projects: 0 });
+  const [stats, setStats] = useState({ quotes: 0, news: 0, projects: 0, foundation: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,12 +12,14 @@ export default function AdminDashboard() {
       setLoading(true);
       try {
         // On récupère juste des totaux. Si tu n’as pas d’endpoint stats, on fait simple:
-        const [q, n, p] = await Promise.all([
-          fetch("/api/admin/quotes?limit=1&page=1", { headers: { Authorization: `Bearer ${token}` } })
+        const [q, n, p, f] = await Promise.all([
+          fetch("/api/admin/quotes?limit=1&page=1", { credentials: "include" })
             .then(r => r.json()).catch(() => ({})),
-          fetch("/api/admin/news?status=ALL&limit=1&page=1", { headers: { Authorization: `Bearer ${token}` } })
+          fetch("/api/admin/news?status=ALL&limit=1&page=1", { credentials: "include" })
             .then(r => r.json()).catch(() => ({})),
-          fetch("/api/admin/projects?status=ALL&limit=1&page=1", { headers: { Authorization: `Bearer ${token}` } })
+          fetch("/api/admin/projects?status=ALL&limit=1&page=1", { credentials: "include" })
+            .then(r => r.json()).catch(() => ({})),
+          fetch("/api/admin/foundation/actions?status=ALL&limit=1&page=1", { credentials: "include" })
             .then(r => r.json()).catch(() => ({})),
         ]);
 
@@ -28,6 +28,7 @@ export default function AdminDashboard() {
             quotes: q?.total || 0,
             news: n?.total || 0,
             projects: p?.total || 0,
+            foundation: f?.total || 0,
           });
         }
       } finally {
@@ -37,7 +38,7 @@ export default function AdminDashboard() {
 
     load();
     return () => { cancelled = true; };
-  }, [token]);
+  }, []);
 
   return (
     <div style={styles.wrap}>
@@ -51,12 +52,14 @@ export default function AdminDashboard() {
           <Kpi title="Demandes de devis" value={stats.quotes} to="/admin/quotes" />
           <Kpi title="Actualités" value={stats.news} to="/admin/news" />
           <Kpi title="Réalisations" value={stats.projects} to="/admin/projects" />
+          <Kpi title="Fondation" value={stats.foundation} to="/admin/foundation" />
         </div>
       )}
 
       <div style={styles.quick}>
         <Link to="/admin/news/new" style={styles.btn}>+ Nouvelle actu</Link>
         <Link to="/admin/projects/new" style={styles.btnGhost}>+ Nouvelle réalisation</Link>
+        <Link to="/admin/foundation/new" style={styles.btnGhost}>+ Nouvelle action</Link>
       </div>
     </div>
   );
@@ -76,7 +79,7 @@ const styles = {
   h1: { fontSize: 22, fontWeight: 950, margin: 0, color: "rgba(255,255,255,0.92)" },
   sub: { marginTop: 6, color: "rgba(255,255,255,0.65)" },
 
-  grid: { marginTop: 14, display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 10 },
+  grid: { marginTop: 14, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 10 },
   card: {
     marginTop: 14,
     borderRadius: 18,

@@ -1,6 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import AdminDashboard from "./AdminDashboard.jsx";
 import { adminLogout } from "../../lib/adminApi.js";
 
 
@@ -73,6 +72,15 @@ export default function AdminLayout() {
         </div>
 
         <div style={styles.section}>
+          <div style={styles.sectionTitle}>Général</div>
+          <nav className="rgAdminNav" style={styles.nav}>
+            {NAV.filter((x) => x.group === "Général").map((item) => (
+              <NavItem key={item.to} {...item} />
+            ))}
+          </nav>
+        </div>
+
+        <div style={styles.section}>
           <div style={styles.sectionTitle}>Demandes</div>
           <nav className="rgAdminNav" style={styles.nav}>
             {NAV.filter((x) => x.group === "Demandes").map((item) => (
@@ -113,10 +121,6 @@ export default function AdminLayout() {
       </aside>
 
       <div style={styles.right}>
-        <div style={styles.dashboardSticky}>
-          <AdminDashboard />
-        </div>
-
         <main style={styles.main}>
           <Outlet />
         </main>
@@ -173,16 +177,6 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     minHeight: "100vh",
-  },
-
-  dashboardSticky: {
-    position: "sticky",
-    top: 0,
-    zIndex: 30,
-    padding: "14px 18px",
-    borderBottom: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(3,10,26,0.72)",
-    backdropFilter: "blur(12px)",
   },
 
   shell: {

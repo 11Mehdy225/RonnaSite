@@ -191,7 +191,7 @@ export default function AdminProjectsForm({ mode }) {
       if (e?.message === "UNAUTHORIZED") return;
       setNotice({
         type: "err",
-        text: e?.message || "Erreur réseau. Vérifie que l’API tourne.",
+        text: e?.message || "Le service d’administration est momentanément indisponible.",
       });
     } finally {
       setSaving(false);

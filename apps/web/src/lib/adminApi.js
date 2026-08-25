@@ -63,7 +63,7 @@ export async function adminUploadFile(file) {
     throw new Error(json?.message || "Upload échoué");
   }
 
-  return json.url; // "/uploads/xxx.jpg"
+  return json.url;
 }
 
 /* ─────────────────────────────────────────────

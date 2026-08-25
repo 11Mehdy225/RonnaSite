@@ -19,6 +19,7 @@ import adminNewsRoutes from "./routes/admin.news.routes.js";
 import adminProjectsRoutes from "./routes/admin.projects.routes.js";
 import adminUploadRoutes from "./routes/admin.upload.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
+import mediaRoutes from "./routes/media.routes.js";
 
 const app = express();
 /* ─────────────────────────────────────
@@ -121,6 +122,7 @@ app.use("/api", adminNewsRoutes);
 app.use("/api", adminProjectsRoutes);
 app.use("/api", adminUploadRoutes);
 app.use("/api", contactRoutes);
+app.use("/api", mediaRoutes);
 
 
 

@@ -14,7 +14,7 @@ const asStr = (v) => String(v ?? "").trim();
 
 function validateUrlHttpOrUpload(url) {
   if (!url) return true;
-  return /^https?:\/\//i.test(url) || String(url).startsWith("/uploads/");
+  return /^https?:\/\//i.test(url) || String(url).startsWith("/uploads/") || String(url).startsWith("/api/media/");
 }
 
 /* ─────────────────────────────────────────────

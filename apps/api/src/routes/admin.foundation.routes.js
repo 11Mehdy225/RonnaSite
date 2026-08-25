@@ -256,8 +256,8 @@ function validate(p) {
   if (!p.slug || p.slug.length < 2) errors.slug = "Slug requis.";
   if (!p.short || p.short.length < 10) errors.short = "Résumé requis (min 10).";
 
-  if (p.image && !( /^https?:\/\//i.test(p.image) || p.image.startsWith("/uploads/") )) {
-  errors.image = "Image doit être une URL http(s) ou /uploads/...";
+  if (p.image && !( /^https?:\/\//i.test(p.image) || p.image.startsWith("/uploads/") || p.image.startsWith("/api/media/") )) {
+  errors.image = "Image doit être une URL http(s), /uploads/... ou /api/media/...";
 }
   if (p.order != null && Number.isNaN(p.order)) errors.order = "Order invalide.";
 
