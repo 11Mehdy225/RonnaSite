@@ -4,6 +4,7 @@ import { getDb } from "../config/db.js";
 import { requireAdmin } from "../middleware/auth.js"; 
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
 import { slugify } from "../utils/slugify.js";
+import { deleteUnreferencedMedia } from "../utils/mediaStorage.js";
 
 const router = express.Router();
 
@@ -197,6 +198,11 @@ if (next.ctaSecondaryType === "CONTACT") next.ctaSecondaryUrl = "";
 
     await db.collection("projects").updateOne({ _id }, { $set: next });
     const item = await db.collection("projects").findOne({ _id });
+
+    const previousMedia = [prev.coverImage, ...(Array.isArray(prev.gallery) ? prev.gallery : [])];
+    const currentMedia = new Set([item.coverImage, ...(Array.isArray(item.gallery) ? item.gallery : [])]);
+    await deleteUnreferencedMedia(db, previousMedia.filter((url) => !currentMedia.has(url)));
+
     res.json({ ok: true, item });
   } catch (err) {
     console.error("PATCH /api/admin/projects/:id error:", err);
@@ -209,9 +215,16 @@ router.delete("/admin/projects/:id", requireAdmin,requireAdminCsrf, async (req, 
   try {
     const db = getDb();
     const _id = new ObjectId(req.params.id);
+    const existing = await db.collection("projects").findOne({ _id });
+    if (!existing) return res.status(404).json({ ok: false, message: "Introuvable" });
 
     const r = await db.collection("projects").deleteOne({ _id });
     if (r.deletedCount === 0) return res.status(404).json({ ok: false, message: "Introuvable" });
+
+    await deleteUnreferencedMedia(db, [
+      existing.coverImage,
+      ...(Array.isArray(existing.gallery) ? existing.gallery : []),
+    ]);
 
     res.json({ ok: true });
   } catch {

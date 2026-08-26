@@ -216,6 +216,7 @@ import { getDb } from "../config/db.js";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "../middleware/auth.js";
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
+import { deleteUnreferencedMedia } from "../utils/mediaStorage.js";
 
 const router = express.Router();
 
@@ -351,6 +352,8 @@ router.patch("/admin/foundation/actions/:id", requireAdmin, requireAdminCsrf, as
   try {
     const db = getDb();
     const id = new ObjectId(req.params.id);
+    const previous = await db.collection("foundation_actions").findOne({ _id: id });
+    if (!previous) return res.status(404).json({ ok: false, message: "Introuvable" });
 
     const payload = pickBody(req.body);
     const errors = validate(payload);
@@ -375,6 +378,9 @@ router.patch("/admin/foundation/actions/:id", requireAdmin, requireAdminCsrf, as
     if (!r.matchedCount) return res.status(404).json({ ok: false, message: "Introuvable" });
 
     const item = await db.collection("foundation_actions").findOne({ _id: id });
+    if (previous.image !== item.image) {
+      await deleteUnreferencedMedia(db, [previous.image]);
+    }
     res.json({ ok: true, item });
   } catch (err) {
     console.error("PATCH /api/admin/foundation/actions/:id error:", err);
@@ -386,9 +392,13 @@ router.delete("/admin/foundation/actions/:id", requireAdmin, requireAdminCsrf, a
   try {
     const db = getDb();
     const id = new ObjectId(req.params.id);
+    const existing = await db.collection("foundation_actions").findOne({ _id: id });
+    if (!existing) return res.status(404).json({ ok: false, message: "Introuvable" });
 
     const r = await db.collection("foundation_actions").deleteOne({ _id: id });
     if (!r.deletedCount) return res.status(404).json({ ok: false, message: "Introuvable" });
+
+    await deleteUnreferencedMedia(db, [existing.image]);
 
     res.json({ ok: true });
   } catch {

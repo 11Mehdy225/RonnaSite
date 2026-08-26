@@ -634,7 +634,7 @@ export default function AdminNewsForm({ mode = "create" }) {
   // TipTap
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({ link: false }),
       LinkExt.configure({
         openOnClick: false,
         autolink: true,

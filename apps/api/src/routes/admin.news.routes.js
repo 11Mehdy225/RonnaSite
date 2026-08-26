@@ -3,6 +3,7 @@ import { getDb } from "../config/db.js";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "../middleware/auth.js"; 
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
+import { deleteUnreferencedMedia } from "../utils/mediaStorage.js";
 
 const router = express.Router();
 
@@ -192,6 +193,10 @@ router.patch("/admin/news/:id", requireAdmin,requireAdminCsrf, async (req, res) 
     await db.collection("news").updateOne({ _id: new ObjectId(id) }, { $set: patch });
     const item = await db.collection("news").findOne({ _id: new ObjectId(id) });
 
+    if (body.coverImage !== undefined && existing.coverImage !== item.coverImage) {
+      await deleteUnreferencedMedia(db, [existing.coverImage]);
+    }
+
     res.json({ ok: true, item });
   } catch (err) {
     console.error("PATCH /api/admin/news/:id error:", err);
@@ -204,9 +209,14 @@ router.delete("/admin/news/:id", requireAdmin,requireAdminCsrf, async (req, res)
   try {
     const db = getDb();
     const { id } = req.params;
+    const _id = new ObjectId(id);
+    const existing = await db.collection("news").findOne({ _id });
+    if (!existing) return res.status(404).json({ ok: false, message: "Introuvable" });
 
-    const r = await db.collection("news").deleteOne({ _id: new ObjectId(id) });
+    const r = await db.collection("news").deleteOne({ _id });
     if (r.deletedCount === 0) return res.status(404).json({ ok: false, message: "Introuvable" });
+
+    await deleteUnreferencedMedia(db, [existing.coverImage]);
 
     res.json({ ok: true });
   } catch (err) {
