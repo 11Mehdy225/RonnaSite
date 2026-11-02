@@ -1,821 +1,110 @@
-import { useEffect, useMemo, useState } from "react";
-import mission09 from "../assets/fondation/mission09-optimized.jpg";
-import SEO from "../components/SEO.jsx"; 
-import { apiUrl } from "../lib/api.js";
+import { Link } from "react-router-dom";
+import SEO from "../components/SEO.jsx";
+import educationImage from "../assets/fondation/foundation-education-temp.jpg";
+import solidarityImage from "../assets/fondation/foundation-solidarity-temp.jpg";
+import mentoringImage from "../assets/fondation/foundation-mentoring-temp.jpg";
 
-const EMPTY_DONATION = {
-  fullName: "",
-  email: "",
-  phone: "",
-  donationType: "ONE_TIME",
-  amount: "",
-  consent: false,
-};
+const PILLARS = [
+  { number: "01", title: "Éducation numérique", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus." },
+  { number: "02", title: "Solidarité", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas faucibus mollis interdum." },
+  { number: "03", title: "Entrepreneuriat", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed odio dui, cras mattis consectetur." }
+];
 
-function toDateLabel(iso) {
-  if (!iso) return "—";
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString("fr-FR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric"
-    });
-  } catch {
-    return String(iso);
-  }
-}
-
-function splitByDate(items) {
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  const upcoming = [];
-  const past = [];
-
-  for (const it of items) {
-    const dt = it?.eventDate ? new Date(it.eventDate) : null;
-    const valid = dt && !Number.isNaN(dt.getTime());
-
-    if (valid && dt >= todayStart) upcoming.push(it);
-    else past.push(it);
-  }
-
-  // Upcoming : du plus proche au plus lointain
-  upcoming.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
-  // Past : du plus récent au plus ancien (ou par order si tu préfères)
-  past.sort((a, b) => {
-    const da = a?.eventDate ? new Date(a.eventDate).getTime() : 0;
-    const db = b?.eventDate ? new Date(b.eventDate).getTime() : 0;
-    return db - da;
-  });
-
-  return { upcoming, past };
-}
+const ACTIONS = [
+  { title: "Ateliers d’initiation au numérique", category: "Éducation", image: educationImage, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna, vel scelerisque nisl consectetur." },
+  { title: "Programme de solidarité communautaire", category: "Solidarité", image: solidarityImage, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean lacinia bibendum nulla sed consectetur." },
+  { title: "Mentorat pour les jeunes talents", category: "Accompagnement", image: mentoringImage, text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum id ligula porta felis euismod semper." }
+];
 
 export default function Fondation() {
-  const [pageLoading, setPageLoading] = useState(true);
-
-  const [items, setItems] = useState([]);
-  const [loadingActions, setLoadingActions] = useState(true);
-  const [errorActions, setErrorActions] = useState(null);
-
-  // Slider (colonne gauche)
-  const [index, setIndex] = useState(0);
-
-  // Modal
-  const [active, setActive] = useState(null); // { ...item, details? }
-  const [activeLoading, setActiveLoading] = useState(false);
-  const [activeError, setActiveError] = useState(null);
-  const [donation, setDonation] = useState({ ...EMPTY_DONATION });
-  const [donationSubmitting, setDonationSubmitting] = useState(false);
-  const [donationNotice, setDonationNotice] = useState(null);
-
-  // Loader volontaire
-  useEffect(() => {
-    const t = setTimeout(() => setPageLoading(false), 1200);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Fetch liste actions
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadActions() {
-      try {
-        setLoadingActions(true);
-        setErrorActions(null);
-
-        const res = await fetch(apiUrl("/api/foundation/actions"));
-        const json = await res.json().catch(() => ({}));
-
-        if (!res.ok || json?.ok === false) {
-          throw new Error(json?.message || "Erreur chargement actions");
-        }
-
-        const list = Array.isArray(json.items) ? json.items : [];
-        if (!cancelled) setItems(list);
-
-        if (!cancelled) setIndex(0);
-      } catch (e) {
-        if (!cancelled) setErrorActions(e?.message || "Erreur réseau");
-      } finally {
-        if (!cancelled) setLoadingActions(false);
-      }
-    }
-
-    loadActions();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Split auto upcoming/past
-  const { upcoming, past } = useMemo(() => splitByDate(items), [items]);
-
-  // Slider auto sur "past" (gauche)
-  useEffect(() => {
-    if (loadingActions || past.length <= 1) return;
-
-    const t = setInterval(() => {
-      setIndex((i) => (i + 1) % past.length);
-    }, 4000);
-
-    return () => clearInterval(t);
-  }, [loadingActions, past.length]);
-
-  const current = past[index] || null;
-
-  const openDetails = async (a) => {
-    if (!a?._id) return;
-
-    setActiveError(null);
-    setActiveLoading(true);
-
-    // Ouvre modal tout de suite (skeleton)
-    setActive({ ...a, details: null });
-
-    try {
-      const res = await fetch(`/api/foundation/actions/${encodeURIComponent(a._id)}`);
-      const json = await res.json().catch(() => ({}));
-
-      if (!res.ok || json?.ok === false) {
-        throw new Error(json?.message || "Impossible de charger le détail");
-      }
-
-      setActive(json.item);
-    } catch (e) {
-      setActiveError(e?.message || "Erreur réseau");
-    } finally {
-      setActiveLoading(false);
-    }
-  };
-
-  const closeModal = () => {
-    setActive(null);
-    setActiveError(null);
-    setActiveLoading(false);
-  };
-
-  const updateDonation = (field, value) => {
-    setDonation((current) => ({ ...current, [field]: value }));
-    setDonationNotice(null);
-  };
-
-  const submitDonation = async (event) => {
-    event.preventDefault();
-    if (donationSubmitting) return;
-
-    const amount = Number(String(donation.amount).replace(/\s/g, ""));
-    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donation.email.trim());
-    if (
-      donation.fullName.trim().length < 2 ||
-      !validEmail ||
-      donation.phone.trim().length < 6 ||
-      !Number.isFinite(amount) ||
-      amount <= 0 ||
-      !donation.consent
-    ) {
-      setDonationNotice({ type: "error", text: "Merci de compléter tous les champs et d’accepter d’être recontacté." });
-      return;
-    }
-
-    setDonationSubmitting(true);
-    setDonationNotice(null);
-
-    try {
-      const donationLabel = donation.donationType === "MONTHLY" ? "Don mensuel" : "Don unique";
-      const response = await fetch(apiUrl("/api/contact"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "CONTACT",
-          fullName: donation.fullName.trim(),
-          email: donation.email.trim(),
-          phone: donation.phone.trim(),
-          company: "Particulier",
-          role: "Donateur",
-          service: "AUTRE",
-          subject: "Intention de don à la Fondation Ronna",
-          message: `${donationLabel} — montant indicatif : ${amount.toLocaleString("fr-FR")} FCFA. Merci de recontacter cette personne pour finaliser le don.`,
-          consent: true,
-          honeypot: "",
-        }),
-      });
-      const json = await response.json().catch(() => ({}));
-      if (!response.ok || json?.ok === false) throw new Error(json?.message || "Envoi impossible");
-
-      setDonation({ ...EMPTY_DONATION });
-      setDonationNotice({
-        type: "success",
-        text: `Merci. Votre intention de don a été transmise${json?.id ? ` (référence ${json.id})` : ""}. Notre équipe vous recontactera pour la finaliser.`,
-      });
-    } catch {
-      setDonationNotice({ type: "error", text: "L’envoi a échoué. Merci de réessayer ou de passer par la page Contact." });
-    } finally {
-      setDonationSubmitting(false);
-    }
-  };
-
-  if (pageLoading) {
-    return (
-      <main style={styles.loaderPage}>
-        <div style={styles.loaderCard}>
-          <HandsLoaderSVG />
-          <div style={styles.loaderTitle}>Mission09 • Fondation</div>
-          <div style={styles.loaderText}>Préparation de la page…</div>
-          <div style={styles.loaderBar}>
-            <span style={styles.loaderBarFill} />
-          </div>
-        </div>
-        <style>{css}</style>
-      </main>
-    );
-  }
-
   return (
     <>
-    <SEO
-  title="Fondation"
-  description="La Fondation Ronna soutient des actions sociales, éducatives et communautaires."
-  canonical="https://www.ronnagroup.net/fondation"
-/>
-    <main style={styles.page}>
-      {/* HERO sticky */}
-      <div style={styles.hero} className="rgFoundationHero">
-        <div style={styles.heroOverlay} />
-        <p style={styles.quote} className="rgFoundationQuote">
-          <em>
-            “Servir, impacter, relever — bâtir une chaîne de solidarité et d’opportunités.”
-          </em>
-        </p>
-      </div>
-
-      {/* DON FORM horizontal (après hero) */}
-      <section style={styles.donateStrip}>
-        <div style={styles.donateStripInner} className="donateStrip">
-          <div style={styles.donateStripLeft} className="donateStripIntro">
-            <div style={styles.donateTitle}>Faire un don</div>
-            <div style={styles.donateHint}>
-              Transmettez votre intention de don. Notre équipe vous recontactera pour la finaliser en toute sécurité.
-            </div>
+      <SEO
+        title="Fondation | Ronna Group"
+        description="Découvrez la vision et les futurs axes d’intervention de la Fondation RONNA GROUP."
+        canonical="https://www.ronnagroup.net/fondation"
+      />
+      <main className="rg-foundation">
+        <header className="rg-foundation__hero">
+          <img src={educationImage} alt="Illustration provisoire d’un atelier numérique" />
+          <div className="rg-foundation__overlay" />
+          <div className="rg-foundation__hero-copy">
+            <span className="rg-foundation__notice">Présentation provisoire • Contenus à venir</span>
+            <p className="rg-foundation__eyebrow">Fondation RONNA GROUP</p>
+            <h1>Transmettre, accompagner et créer des opportunités.</h1>
+            <p className="rg-foundation__lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed posuere consectetur est at lobortis. Nullam quis risus eget urna mollis ornare vel eu leo.</p>
+            <a href="#vision">Découvrir notre vision <span>↓</span></a>
           </div>
-          <style>{`
-    @media (max-width: 900px) {
-      .donateStripInner {
-        grid-template-columns: 1fr !important;
-      }
-      .donateStripForm {
-        grid-template-columns: 1fr !important;
-      }
-      .donateStripForm button {
-        width: 100% !important;
-      }
-    }
-  `}</style>
+        </header>
 
-          <form onSubmit={submitDonation} style={styles.donateStripForm} className="donateStripForm">
-            <Field label="Nom" placeholder="Votre nom" value={donation.fullName} onChange={(value) => updateDonation("fullName", value)} />
-            <Field label="Email" type="email" placeholder="vous@email.com" value={donation.email} onChange={(value) => updateDonation("email", value)} />
-            <Field label="Téléphone" type="tel" placeholder="+225 ..." value={donation.phone} onChange={(value) => updateDonation("phone", value)} />
-            <SelectField
-              label="Type"
-              value={donation.donationType}
-              onChange={(value) => updateDonation("donationType", value)}
-              options={[
-                { value: "ONE_TIME", label: "Don unique" },
-                { value: "MONTHLY", label: "Mensuel" }
-              ]}
-            />
-            <Field label="Montant (FCFA)" type="number" placeholder="Ex: 5000" value={donation.amount} onChange={(value) => updateDonation("amount", value)} />
-            <label style={styles.donationConsent}>
-              <input type="checkbox" checked={donation.consent} onChange={(event) => updateDonation("consent", event.target.checked)} />
-              <span>J’accepte d’être recontacté au sujet de ce don.</span>
-            </label>
-            {donationNotice && (
-              <div style={{ ...styles.donationNotice, ...(donationNotice.type === "success" ? styles.donationSuccess : styles.donationError) }}>
-                {donationNotice.text}
-              </div>
-            )}
-            <button type="submit" style={styles.donateBtn} disabled={donationSubmitting}>
-              {donationSubmitting ? "Envoi…" : "Envoyer mon intention"}
-            </button>
-          </form>
-        </div>
-      </section>
-
-      {/* CONTENU 2 COLONNES */}
-      <section style={styles.stage}>
-        <div className="rgFoundationGrid" style={styles.stageGrid}>
-          {/* GAUCHE : Actions (slider) */}
-          <div style={styles.left} className="rgFoundationLeft">
-            {loadingActions && <div style={styles.stateCard}>Chargement des actions…</div>}
-
-            {!loadingActions && errorActions && (
-              <div style={{ ...styles.stateCard, ...styles.stateCardError }}>
-                Erreur : {errorActions}
-              </div>
-            )}
-
-            {!loadingActions && !errorActions && past.length === 0 && (
-              <div style={styles.stateCard}>Aucune action publiée pour le moment.</div>
-            )}
-
-            {current && (
-              <div style={styles.slideCard}>
-                <div style={styles.slideMedia} className="rgFoundationSlideMedia">
-                  {current.image ? (
-                    <img src={current.image} alt={current.title} style={styles.slideImg} />
-                  ) : (
-                    <div style={styles.noImg}>Aucune image</div>
-                  )}
-                  <div style={styles.slideOverlay} />
-                  <div style={styles.slideTextBlock}>
-                    <div style={styles.slideTitle}>{current.title}</div>
-                    <div style={styles.slideMeta}>
-                      <span style={styles.metaPill}>Action</span>
-                      <span style={styles.metaText}>{toDateLabel(current.eventDate || current.createdAt)}</span>
-                    </div>
-                    <div style={styles.slideShort}>{current.short}</div>
-
-                    <button type="button" style={styles.slideBtn} onClick={() => openDetails(current)}>
-                      En savoir plus →
-                    </button>
-                  </div>
-                </div>
-
-                <div style={styles.dots}>
-                  {past.map((a, i) => (
-                    <button
-                      key={a._id || i}
-                      type="button"
-                      aria-label={`Aller à ${a.title}`}
-                      onClick={() => setIndex(i)}
-                      style={{
-                        ...styles.dot,
-                        ...(i === index ? styles.dotActive : null)
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* DROITE : À venir */}
-          <aside style={styles.right} className="rgFoundationRight">
-            <div style={styles.upTitle}>Événements à venir</div>
-
-            {loadingActions && <div style={styles.upEmpty}>Chargement…</div>}
-
-            {!loadingActions && !errorActions && upcoming.length === 0 && (
-              <div style={styles.upEmpty}>Aucun événement à venir pour le moment.</div>
-            )}
-
-            {!loadingActions && upcoming.length > 0 && (
-              <div style={styles.upList}>
-                {upcoming.map((ev) => (
-                  <button
-                    key={ev._id}
-                    type="button"
-                    onClick={() => openDetails(ev)}
-                    style={styles.upCard}
-                  >
-                    <div style={styles.upImgWrap}>
-                      {ev.image ? (
-                        <img src={ev.image} alt={ev.title} style={styles.upImg} loading="lazy" decoding="async" />
-                      ) : (
-                        <div style={styles.upNoImg}>—</div>
-                      )}
-                    </div>
-
-                    <div style={styles.upBody}>
-                      <div style={styles.upDate}>{toDateLabel(ev.eventDate)}</div>
-                      <div style={styles.upName}>{ev.title}</div>
-                      <div style={styles.upShort}>{ev.short}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </aside>
-        </div>
-      </section>
-
-      {/* MODAL */}
-      {active && (
-        <div style={styles.modalBack} role="dialog" aria-modal="true" onClick={closeModal}>
-          <div style={styles.modalCard} className="rgFoundationModal" onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalMedia}>
-              {active.image ? (
-                <img src={active.image} alt={active.title} style={styles.modalImg} decoding="async" />
-              ) : (
-                <div style={styles.modalNoImg}>Aucune image</div>
-              )}
+        <section id="vision" className="rg-foundation__vision">
+          <div className="rg-foundation__section-title">
+            <div>
+              <span className="rg-foundation__eyebrow">Notre raison d’être</span>
+              <h2>Mettre l’innovation au service de l’impact humain.</h2>
             </div>
-
-            <div style={styles.modalBody}>
-              <div style={styles.modalTitle}>{active.title}</div>
-              <div style={styles.modalMeta}>
-                <span style={styles.metaPill}>Fondation</span>
-                <span style={styles.metaText}>{toDateLabel(active.eventDate || active.createdAt)}</span>
-              </div>
-
-              {activeError && (
-                <div style={{ ...styles.modalText, color: "rgba(239,68,68,0.95)" }}>
-                  {activeError}
-                </div>
-              )}
-
-              {activeLoading && !active?.details && (
-                <div style={styles.modalText}>Chargement…</div>
-              )}
-
-              {!activeLoading && !activeError && (
-                <div style={styles.modalText}>
-                  {active.details || "Détails à venir…"}
-                </div>
-              )}
-
-              <button type="button" style={styles.modalClose} onClick={closeModal}>
-                Fermer
-              </button>
-            </div>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur blandit tempus porttitor. Etiam porta sem malesuada magna mollis euismod. Donec ullamcorper nulla non metus auctor fringilla.</p>
           </div>
-        </div>
-      )}
+          <div className="rg-foundation__pillars">
+            {PILLARS.map((pillar) => (
+              <article key={pillar.number}>
+                <span>{pillar.number}</span>
+                <h3>{pillar.title}</h3>
+                <p>{pillar.text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
 
+        <section className="rg-foundation__manifesto">
+          <div>
+            <span className="rg-foundation__eyebrow">Notre engagement</span>
+            <blockquote>« Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donner à chacun les moyens de révéler son potentiel. »</blockquote>
+          </div>
+          <img src={mentoringImage} alt="Illustration provisoire d’une séance de mentorat" loading="lazy" />
+        </section>
+
+        <section className="rg-foundation__actions">
+          <div className="rg-foundation__section-title">
+            <div>
+              <span className="rg-foundation__eyebrow">Actions envisagées</span>
+              <h2>Trois axes pour agir durablement.</h2>
+            </div>
+            <p>Les programmes présentés ci-dessous sont des exemples provisoires. Ils seront remplacés par les actions officielles de la Fondation.</p>
+          </div>
+          <div className="rg-foundation__actions-grid">
+            {ACTIONS.map((action) => (
+              <article key={action.title}>
+                <div><img src={action.image} alt="Illustration provisoire" loading="lazy" /><span>{action.category}</span></div>
+                <section>
+                  <h3>{action.title}</h3>
+                  <p>{action.text}</p>
+                  <strong>Programme en préparation</strong>
+                </section>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="rg-foundation__cta">
+          <div>
+            <span className="rg-foundation__eyebrow">Construisons un impact durable</span>
+            <h2>Vous souhaitez imaginer une action avec la Fondation ?</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras mattis consectetur purus sit amet fermentum.</p>
+          </div>
+          <div>
+            <Link to="/contact?service=AUTRE&subject=Partenariat%20Fondation">Proposer un partenariat</Link>
+            <a href="mailto:contact@ronnagroup.net">Nous écrire</a>
+          </div>
+        </section>
+      </main>
       <style>{css}</style>
-    </main>
     </>
   );
 }
 
-function Field({ label, type = "text", placeholder, value, onChange }) {
-  return (
-    <label style={styles.field}>
-      <span style={styles.label}>{label}</span>
-      <input type={type} placeholder={placeholder} value={value} onChange={(event) => onChange(event.target.value)} style={styles.input} required />
-    </label>
-  );
-}
-function SelectField({ label, options, value, onChange }) {
-  return (
-    <label style={styles.field}>
-      <span style={styles.label}>{label}</span>
-      <select style={styles.input} value={value} onChange={(event) => onChange(event.target.value)}>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function HandsLoaderSVG() {
-  return (
-    <svg width="120" height="120" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Solidarité">
-      <g className="hand-left">
-        <path
-          d="M40 110 C30 95,30 80,45 70 L75 50 C85 45,95 55,88 65 L70 85 C65 90,60 95,55 100 Z"
-          fill="#3B82F6"
-          opacity="0.9"
-        />
-      </g>
-      <g className="hand-right">
-        <path
-          d="M160 110 C170 95,170 80,155 70 L125 50 C115 45,105 55,112 65 L130 85 C135 90,140 95,145 100 Z"
-          fill="#60A5FA"
-          opacity="0.9"
-        />
-      </g>
-      <path
-        d="M100 115 C95 108,85 105,80 112 C75 120,85 132,100 142 C115 132,125 120,120 112 C115 105,105 108,100 115 Z"
-        fill="#93C5FD"
-        opacity="0.85"
-      />
-    </svg>
-  );
-}
-
-const styles = {
-  page: {
-    paddingTop: 86,
-    background:
-      "linear-gradient(180deg, rgba(3,10,26,0.98) 0%, rgba(5,18,45,0.98) 55%, rgba(3,10,26,0.98) 100%)",
-    minHeight: "100vh"
-  },
-
-  hero: {
-    position: "sticky",
-    top: 86,
-    zIndex: 5,
-    minHeight: 220,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "24px 18px",
-    textAlign: "center",
-    backgroundImage: `url(${mission09})`,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "center",
-    backgroundSize: "cover",
-    borderBottom: "1px solid rgba(255,255,255,0.08)"
-  },
-  heroOverlay: {
-    position: "absolute",
-    inset: 0,
-    background:
-      "linear-gradient(180deg, rgba(3,10,26,0.65) 0%, rgba(3,10,26,0.85) 100%)",
-    zIndex: 0
-  },
-  quote: {
-    position: "relative",
-    zIndex: 1,
-    maxWidth: 820,
-    margin: 0,
-    color: "rgba(255,255,255,0.95)",
-    fontSize: 20,
-    lineHeight: 1.9,
-    fontStyle: "italic",
-    fontWeight: 500,
-    textShadow: "0 8px 30px rgba(0,0,0,0.45)"
-  },
-
-  donateStrip: {
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
-    background: "rgba(255,255,255,0.02)"
-  },
-  donateStripInner: {
-    maxWidth: 1200,
-    margin: "0 auto",
-    padding: "14px 18px",
-    display: "grid",
-    gridTemplateColumns: "320px 1fr",
-    gap: 14,
-    alignItems: "center"
-  },
-  donateStripLeft: { minWidth: 0 },
-  donateTitle: { fontWeight: 950, color: "rgba(255,255,255,0.95)", fontSize: 18 },
-  donateHint: { marginTop: 6, color: "rgba(255,255,255,0.70)", lineHeight: 1.5, fontSize: 13.5 },
-
-  donateStripForm: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, minmax(0, 1fr)) auto",
-    gap: 10,
-    alignItems: "end",
-    minWidth:0,
-  },
-  donationConsent: { display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.72)", fontSize: 12.5, gridColumn: "1 / -1" },
-  donationNotice: { padding: "10px 12px", borderRadius: 14, fontSize: 13, lineHeight: 1.5, gridColumn: "1 / -1" },
-  donationSuccess: { color: "rgba(187,247,208,0.95)", border: "1px solid rgba(34,197,94,0.28)", background: "rgba(34,197,94,0.10)" },
-  donationError: { color: "rgba(254,202,202,0.95)", border: "1px solid rgba(239,68,68,0.30)", background: "rgba(239,68,68,0.10)" },
-  donateBtn: {
-    height: 44,
-    padding: "0 16px",
-    borderRadius: 999,
-    background: "rgba(31,79,216,.95)",
-    border: "1px solid rgba(255,255,255,0.14)",
-    color: "white",
-    cursor: "pointer",
-    whiteSpace: "nowrap",
-    minWidth:0,
-    gridColumn: "1 / -1",
-    justifySelf: "start",
-  },
-
-  stage: { maxWidth: 1200, margin: "0 auto", padding: "16px 18px 80px" },
-  stageGrid: { display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 16, alignItems: "stretch" },
-
-  left: {
-    borderRadius: 24,
-    border: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(255,255,255,0.03)",
-    padding: 16
-  },
-
-  slideCard: { display: "grid", gap: 12, height: "100%" },
-  slideMedia: {
-    position: "relative",
-    borderRadius: 22,
-    overflow: "hidden",
-    border: "1px solid rgba(255,255,255,0.10)",
-    minHeight: 420
-  },
-  slideImg: { width: "100%", height: "100%", objectFit: "cover", display: "block" },
-  noImg: { height: 420, display: "grid", placeItems: "center", color: "rgba(255,255,255,0.65)" },
-  slideOverlay: {
-    position: "absolute",
-    inset: 0,
-    background:
-      "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(3,10,26,0.70) 70%, rgba(3,10,26,0.92) 100%)"
-  },
-  slideTextBlock: { position: "absolute", left: 16, right: 16, bottom: 16 },
-  slideTitle: { color: "rgba(255,255,255,0.95)", fontSize: 22, fontWeight: 950 },
-  slideMeta: { marginTop: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" },
-  metaPill: {
-    padding: "6px 10px",
-    borderRadius: 999,
-    background: "rgba(3,10,26,0.70)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    color: "rgba(255,255,255,0.88)",
-    fontSize: 12
-  },
-  metaText: { color: "rgba(255,255,255,0.70)", fontSize: 12 },
-  slideShort: { marginTop: 10, color: "rgba(255,255,255,0.78)", lineHeight: 1.7 },
-  slideBtn: {
-    marginTop: 12,
-    padding: "12px 14px",
-    borderRadius: 999,
-    background: "rgba(31,79,216,.95)",
-    border: "1px solid rgba(255,255,255,0.14)",
-    color: "white",
-    cursor: "pointer"
-  },
-  dots: { display: "flex", gap: 8, justifyContent: "center" },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.25)",
-    background: "transparent",
-    cursor: "pointer"
-  },
-  dotActive: { background: "rgba(255,255,255,0.85)" },
-
-  stateCard: {
-    borderRadius: 18,
-    border: "1px dashed rgba(255,255,255,0.16)",
-    background: "rgba(255,255,255,0.03)",
-    padding: 16,
-    color: "rgba(255,255,255,0.78)",
-    textAlign: "center"
-  },
-  stateCardError: { border: "1px dashed rgba(239,68,68,0.45)", color: "rgba(239,68,68,0.92)" },
-
-  right: {
-    borderRadius: 24,
-    border: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(255,255,255,0.03)",
-    padding: 16
-  },
-  upTitle: { fontWeight: 950, color: "rgba(255,255,255,0.95)", fontSize: 16, marginBottom: 10 },
-  upEmpty: {
-    borderRadius: 16,
-    border: "1px dashed rgba(255,255,255,0.14)",
-    padding: 14,
-    color: "rgba(255,255,255,0.70)"
-  },
-  upList: { display: "grid", gap: 10 },
-  upCard: {
-    display: "grid",
-    gridTemplateColumns: "92px 1fr",
-    gap: 10,
-    padding: 10,
-    borderRadius: 18,
-    border: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(255,255,255,0.02)",
-    textAlign: "left",
-    cursor: "pointer"
-  },
-  upImgWrap: { borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.10)" },
-  upImg: { width: "100%", height: 80, objectFit: "cover", display: "block" },
-  upNoImg: { height: 80, display: "grid", placeItems: "center", color: "rgba(255,255,255,0.60)" },
-  upBody: { minWidth: 0 },
-  upDate: { fontSize: 12, color: "rgba(255,255,255,0.68)" },
-  upName: { marginTop: 4, fontWeight: 900, color: "rgba(255,255,255,0.92)" },
-  upShort: { marginTop: 6, color: "rgba(255,255,255,0.72)", lineHeight: 1.55, fontSize: 13 },
-
-  field: { display: "grid", gap: 6 },
-  label: { fontSize: 12, color: "rgba(255,255,255,0.78)" },
-  input: {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 14,
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(3,10,26,0.35)",
-    color: "rgba(255,255,255,0.92)",
-    outline: "none",
-    height: 44
-  },
-
-  modalBack: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.62)",
-    display: "grid",
-    placeItems: "center",
-    zIndex: 50,
-    padding: 18
-  },
-  modalCard: {
-    width: "min(980px, 100%)",
-    borderRadius: 24,
-    overflow: "hidden",
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(3,10,26,0.95)"
-  },
-  modalMedia: { borderBottom: "1px solid rgba(255,255,255,0.10)" },
-  modalImg: { width: "100%", height: 360, objectFit: "cover", display: "block" },
-  modalNoImg: { height: 260, display: "grid", placeItems: "center", color: "rgba(255,255,255,0.65)" },
-  modalBody: { padding: 16 },
-  modalTitle: { fontSize: 22, fontWeight: 950, color: "rgba(255,255,255,0.95)" },
-  modalMeta: { marginTop: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" },
-  modalText: { marginTop: 12, color: "rgba(255,255,255,0.80)", lineHeight: 1.8 },
-  modalClose: {
-    marginTop: 14,
-    padding: "12px 14px",
-    borderRadius: 999,
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.14)",
-    color: "rgba(255,255,255,0.92)",
-    cursor: "pointer"
-  },
-
-  loaderPage: {
-    minHeight: "100vh",
-    display: "grid",
-    placeItems: "center",
-    padding: 18,
-    background:
-      "linear-gradient(180deg, rgba(3,10,26,0.98) 0%, rgba(5,18,45,0.98) 55%, rgba(3,10,26,0.98) 100%)"
-  },
-  loaderCard: {
-    width: "min(520px, 100%)",
-    borderRadius: 26,
-    border: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(255,255,255,0.03)",
-    padding: 18,
-    textAlign: "center"
-  },
-  loaderTitle: { fontWeight: 950, color: "rgba(255,255,255,0.92)" },
-  loaderText: { marginTop: 6, color: "rgba(255,255,255,0.70)" },
-  loaderBar: {
-    marginTop: 14,
-    height: 8,
-    borderRadius: 999,
-    background: "rgba(255,255,255,0.08)",
-    overflow: "hidden"
-  },
-  loaderBarFill: {
-    display: "block",
-    height: "100%",
-    width: "45%",
-    borderRadius: 999,
-    background: "rgba(31,79,216,.85)",
-    animation: "rgLoad 1.1s ease-in-out infinite alternate"
-  }
-};
-
 const css = `
-@keyframes rgLoad {
-  from { transform: translateX(-10%); width: 35%; opacity: .75; }
-  to   { transform: translateX(60%); width: 60%; opacity: 1; }
-}
-
-.hand-left { animation: leftHand 1.4s ease-in-out infinite alternate; transform-origin: 50% 50%; }
-.hand-right { animation: rightHand 1.4s ease-in-out infinite alternate; transform-origin: 50% 50%; }
-
-@keyframes leftHand { from { transform: translateX(-6px); opacity: .7; } to { transform: translateX(0px); opacity: 1; } }
-@keyframes rightHand { from { transform: translateX(6px); opacity: .7; } to { transform: translateX(0px); opacity: 1; } }
-
-@media (max-width: 980px) {
-  .rgFoundationGrid { grid-template-columns: 1fr !important; }
-  .rgFoundationHero {
-    position: relative !important;
-    top: auto !important;
-    min-height: 170px !important;
-  }
-  .donateStrip {
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-    padding-top: 20px !important;
-    padding-bottom: 20px !important;
-  }
-  .donateStripIntro { text-align: center; }
-  .donateStripForm { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-}
-
-@media (max-width: 640px) {
-  .rgFoundationHero {
-    min-height: 140px !important;
-    padding: 20px 16px !important;
-  }
-  .rgFoundationQuote {
-    font-size: 16px !important;
-    line-height: 1.55 !important;
-  }
-  .donateStripForm { grid-template-columns: 1fr !important; }
-  .donateStripForm button { width: 100% !important; }
-  .rgFoundationLeft,
-  .rgFoundationRight { padding: 10px !important; border-radius: 18px !important; }
-  .rgFoundationSlideMedia { min-height: 360px !important; }
-  .rgFoundationModal {
-    max-height: calc(100dvh - 24px);
-    overflow-y: auto !important;
-    border-radius: 18px !important;
-  }
-}
+.rg-foundation{min-height:100vh;padding-top:86px;color:#fff;background:linear-gradient(180deg,rgba(3,10,26,.98),rgba(5,18,45,.98) 55%,rgba(3,10,26,.98));overflow:hidden}.rg-foundation a{text-decoration:none}.rg-foundation__hero{position:relative;max-width:1240px;min-height:650px;margin:24px auto 0;display:flex;align-items:flex-end;overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:30px}.rg-foundation__hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.rg-foundation__overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,10,26,.96) 0%,rgba(3,10,26,.72) 45%,rgba(3,10,26,.1) 75%),linear-gradient(0deg,rgba(3,10,26,.7),transparent 55%)}.rg-foundation__hero-copy{position:relative;z-index:1;max-width:720px;padding:60px}.rg-foundation__notice{display:inline-flex;margin-bottom:24px;padding:8px 11px;border:1px solid rgba(255,198,102,.28);border-radius:999px;background:rgba(255,176,46,.1);color:#ffd18a;font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase}.rg-foundation__eyebrow{color:#8caeff;font-size:11px;font-weight:900;letter-spacing:1.7px;text-transform:uppercase}.rg-foundation__hero h1{margin:10px 0 18px;font-size:clamp(43px,6vw,75px);line-height:.98;letter-spacing:-2.6px}.rg-foundation__lead{max-width:640px;margin:0;color:rgba(255,255,255,.74);font-size:16px;line-height:1.75}.rg-foundation__hero-copy>a{display:inline-flex;margin-top:27px;padding:13px 17px;border-radius:999px;background:#1f4fd8;color:#fff;font-size:12px;font-weight:850}.rg-foundation__hero-copy>a span{margin-left:8px}.rg-foundation__vision,.rg-foundation__actions{max-width:1164px;margin:0 auto;padding:90px 28px}.rg-foundation__section-title{display:grid;grid-template-columns:1.2fr .8fr;gap:70px;align-items:end}.rg-foundation__section-title h2{max-width:720px;margin:10px 0 0;font-size:clamp(31px,4.6vw,52px);line-height:1.05;letter-spacing:-1.6px}.rg-foundation__section-title>p{margin:0;color:rgba(255,255,255,.63);line-height:1.75}.rg-foundation__pillars{margin-top:42px;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(255,255,255,.11)}.rg-foundation__pillars article{padding:28px 30px 10px 0}.rg-foundation__pillars article:not(:last-child){margin-right:30px;border-right:1px solid rgba(255,255,255,.09)}.rg-foundation__pillars article>span{color:#769bf8;font-size:11px;font-weight:900}.rg-foundation__pillars h3{margin:35px 0 10px;font-size:21px}.rg-foundation__pillars p{margin:0;color:rgba(255,255,255,.58);font-size:13.5px;line-height:1.7}.rg-foundation__manifesto{max-width:1164px;margin:0 auto;display:grid;grid-template-columns:.9fr 1.1fr;overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:28px;background:rgba(255,255,255,.035)}.rg-foundation__manifesto>div{padding:clamp(35px,6vw,70px);display:flex;flex-direction:column;justify-content:center}.rg-foundation__manifesto blockquote{margin:20px 0 0;font-size:clamp(25px,3.7vw,42px);font-weight:850;line-height:1.2;letter-spacing:-1px}.rg-foundation__manifesto img{width:100%;height:100%;min-height:440px;object-fit:cover}.rg-foundation__actions-grid{margin-top:38px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.rg-foundation__actions-grid article{overflow:hidden;border:1px solid rgba(255,255,255,.1);border-radius:23px;background:rgba(255,255,255,.03)}.rg-foundation__actions-grid article>div{position:relative;height:245px;overflow:hidden}.rg-foundation__actions-grid img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}.rg-foundation__actions-grid article:hover img{transform:scale(1.025)}.rg-foundation__actions-grid article>div span{position:absolute;left:13px;top:13px;padding:7px 10px;border:1px solid rgba(255,255,255,.17);border-radius:999px;background:rgba(3,10,26,.78);font-size:10px;font-weight:850}.rg-foundation__actions-grid section{padding:22px}.rg-foundation__actions-grid h3{margin:0 0 10px;font-size:21px;line-height:1.2}.rg-foundation__actions-grid p{margin:0;color:rgba(255,255,255,.61);font-size:13.5px;line-height:1.7}.rg-foundation__actions-grid strong{display:block;margin-top:18px;color:#84a7ff;font-size:11px;text-transform:uppercase;letter-spacing:.8px}.rg-foundation__cta{max-width:1108px;margin:0 auto 76px;padding:36px;display:flex;align-items:center;justify-content:space-between;gap:35px;border:1px solid rgba(111,148,243,.28);border-radius:26px;background:linear-gradient(120deg,rgba(31,79,216,.21),rgba(255,255,255,.035))}.rg-foundation__cta h2{max-width:680px;margin:9px 0 8px;font-size:clamp(25px,3.6vw,38px);line-height:1.1}.rg-foundation__cta p{margin:0;color:rgba(255,255,255,.62)}.rg-foundation__cta>div:last-child{display:flex;gap:9px;flex-shrink:0}.rg-foundation__cta a{padding:13px 15px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:#1f4fd8;color:#fff;font-size:12px;font-weight:850}.rg-foundation__cta a:last-child{background:rgba(255,255,255,.045)}
+@media(max-width:900px){.rg-foundation__hero{margin-inline:18px}.rg-foundation__hero-copy{padding:40px}.rg-foundation__section-title{grid-template-columns:1fr;gap:20px}.rg-foundation__manifesto{margin-inline:28px;grid-template-columns:1fr}.rg-foundation__manifesto img{min-height:360px}.rg-foundation__actions-grid{grid-template-columns:1fr 1fr}.rg-foundation__cta{margin-inline:28px;align-items:flex-start;flex-direction:column}}
+@media(max-width:650px){.rg-foundation{padding-top:72px}.rg-foundation__hero{min-height:650px;margin-top:16px;border-radius:23px}.rg-foundation__overlay{background:linear-gradient(0deg,rgba(3,10,26,.98) 0%,rgba(3,10,26,.62) 68%,rgba(3,10,26,.18))}.rg-foundation__hero-copy{padding:28px 20px}.rg-foundation__hero h1{letter-spacing:-1.7px}.rg-foundation__vision,.rg-foundation__actions{padding:62px 18px}.rg-foundation__pillars{grid-template-columns:1fr}.rg-foundation__pillars article,.rg-foundation__pillars article:not(:last-child){margin:0;padding:23px 0;border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}.rg-foundation__pillars h3{margin-top:17px}.rg-foundation__manifesto{margin-inline:18px}.rg-foundation__manifesto>div{padding:30px 20px}.rg-foundation__manifesto img{min-height:280px}.rg-foundation__actions-grid{grid-template-columns:1fr}.rg-foundation__cta{margin:0 18px 55px;padding:27px 20px}.rg-foundation__cta>div:last-child{width:100%;flex-direction:column}.rg-foundation__cta a{text-align:center}}
 `;

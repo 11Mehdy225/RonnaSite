@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO.jsx";
+import { apiUrl } from "../lib/api.js";
 
 const QUESTIONS = [
   { id: "site", category: "Présence numérique", text: "Votre entreprise dispose-t-elle d’un site professionnel, rapide et adapté au mobile ?" },
@@ -40,6 +41,10 @@ function resultLevel(score) {
 export default function AuditExpress() {
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
+  const [lead, setLead] = useState({ fullName: "", email: "", phone: "", company: "", role: "", consent: false, honeypot: "" });
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [sendError, setSendError] = useState("");
 
   const answered = Object.keys(answers).length;
   const progress = Math.round((answered / QUESTIONS.length) * 100);
@@ -61,9 +66,42 @@ export default function AuditExpress() {
 
   const priorities = [...categories].sort((a, b) => a.score - b.score).slice(0, 3);
 
+  async function sendReport(event) {
+    event.preventDefault();
+    setSending(true);
+    setSendError("");
+    const summary = categories.map((category) => `- ${category.name} : ${category.score}%`).join("\n");
+    const actionPlan = priorities.map((priority, index) => `${index + 1}. ${priority.name} — ${CATEGORY_ADVICE[priority.name]}`).join("\n");
+    try {
+      const response = await fetch(apiUrl("/api/contact"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "DEVIS",
+          ...lead,
+          service: "RONNA_AUDIT",
+          subject: `Audit Express — ${lead.company} — ${score}/100`,
+          message: `Rapport Ronna Audit Express\n\nScore global : ${score}/100 — ${level.title}\n\nRésultats par domaine :\n${summary}\n\nPriorités recommandées :\n${actionPlan}`,
+          budgetRange: "UNKNOWN",
+          timeline: "DISCUSS",
+          preferredContact: "EMAIL"
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.ok === false) throw new Error(data?.message || "Impossible d’envoyer le rapport.");
+      setSent(true);
+    } catch (error) {
+      setSendError(error?.message || "Une erreur est survenue.");
+    } finally {
+      setSending(false);
+    }
+  }
+
   function reset() {
     setAnswers({});
     setShowResults(false);
+    setSent(false);
+    setSendError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -169,6 +207,38 @@ export default function AuditExpress() {
               <button onClick={() => window.print()}>Imprimer mon rapport</button>
               <button onClick={reset}>Recommencer</button>
             </div>
+
+            <div className="rg-audit__lead">
+              {!sent ? (
+                <>
+                  <div>
+                    <span>Recevoir une analyse personnalisée</span>
+                    <h2>Transmettez votre rapport à notre équipe.</h2>
+                    <p>RONNA GROUP recevra vos résultats et pourra vous proposer les prochaines actions adaptées à votre entreprise.</p>
+                  </div>
+                  <form onSubmit={sendReport}>
+                    <input required minLength="2" placeholder="Nom et prénom" value={lead.fullName} onChange={(e) => setLead({ ...lead, fullName: e.target.value })} />
+                    <input required type="email" placeholder="Email professionnel" value={lead.email} onChange={(e) => setLead({ ...lead, email: e.target.value })} />
+                    <input required minLength="6" placeholder="Téléphone / WhatsApp" value={lead.phone} onChange={(e) => setLead({ ...lead, phone: e.target.value })} />
+                    <input required minLength="2" placeholder="Entreprise" value={lead.company} onChange={(e) => setLead({ ...lead, company: e.target.value })} />
+                    <input required minLength="2" placeholder="Fonction" value={lead.role} onChange={(e) => setLead({ ...lead, role: e.target.value })} />
+                    <input className="rg-audit__trap" tabIndex="-1" autoComplete="off" aria-hidden="true" value={lead.honeypot} onChange={(e) => setLead({ ...lead, honeypot: e.target.value })} />
+                    <label className="rg-audit__consent">
+                      <input required type="checkbox" checked={lead.consent} onChange={(e) => setLead({ ...lead, consent: e.target.checked })} />
+                      <span>J’accepte que RONNA GROUP utilise ces informations pour me transmettre mon rapport et me recontacter.</span>
+                    </label>
+                    {sendError && <p className="rg-audit__error">{sendError}</p>}
+                    <button disabled={sending}>{sending ? "Transmission…" : "Transmettre mon rapport"}</button>
+                  </form>
+                </>
+              ) : (
+                <div className="rg-audit__success">
+                  <span>Rapport transmis</span>
+                  <h2>Merci, notre équipe a bien reçu votre diagnostic.</h2>
+                  <p>Un accusé de réception vient de vous être envoyé. Nous reviendrons vers vous rapidement.</p>
+                </div>
+              )}
+            </div>
           </section>
         )}
       </main>
@@ -182,6 +252,7 @@ const css = `
 .rg-audit__hero,.rg-audit__form,.rg-audit__results{max-width:1060px;margin:0 auto}.rg-audit__hero{padding:48px 0 38px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:end}.rg-audit__hero>div>span,.rg-audit__result-top>div>span,.rg-audit__priorities>span{color:#87a9ff;font-size:11px;font-weight:900;letter-spacing:1.7px;text-transform:uppercase}.rg-audit__hero h1{max-width:780px;margin:10px 0 14px;font-size:clamp(39px,6vw,68px);line-height:1;letter-spacing:-2.5px}.rg-audit__hero p{max-width:690px;margin:0;color:rgba(255,255,255,.68);font-size:16px;line-height:1.7}.rg-audit__promise{display:grid;grid-template-columns:auto auto;gap:5px 12px;min-width:180px}.rg-audit__promise strong{color:#88aaff;font-size:25px}.rg-audit__promise span{align-self:center;color:rgba(255,255,255,.55);font-size:11px;text-transform:uppercase;letter-spacing:.7px}
 .rg-audit__progress{position:sticky;z-index:4;top:82px;padding:15px 18px;border:1px solid rgba(255,255,255,.11);border-radius:18px;background:rgba(5,18,45,.94);backdrop-filter:blur(14px)}.rg-audit__progress>div{display:flex;justify-content:space-between;margin-bottom:9px;font-size:12px}.rg-audit__progress span{color:rgba(255,255,255,.58)}.rg-audit__progress i,.rg-audit__breakdown i{display:block;height:5px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.08)}.rg-audit__progress b,.rg-audit__breakdown b{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#315fe0,#83a7ff);transition:width .25s ease}.rg-audit__questions{display:grid;gap:14px;margin-top:18px}.rg-audit fieldset{margin:0;padding:22px;border:1px solid rgba(255,255,255,.1);border-radius:22px;background:rgba(255,255,255,.03)}.rg-audit legend{width:100%;padding:0;color:#fff;font-size:17px;font-weight:800;line-height:1.45}.rg-audit legend>span{display:block;margin-bottom:7px;color:#83a6ff;font-size:10px;letter-spacing:1.1px;text-transform:uppercase}.rg-audit fieldset>div{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:17px}.rg-audit label{padding:11px 10px;border:1px solid rgba(255,255,255,.1);border-radius:13px;background:rgba(255,255,255,.025);color:rgba(255,255,255,.68);font-size:12px;text-align:center;cursor:pointer}.rg-audit label.is-selected{border-color:#527cf0;background:rgba(31,79,216,.28);color:#fff}.rg-audit label input{position:absolute;opacity:0;pointer-events:none}.rg-audit__submit{margin-top:20px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;border:1px solid rgba(115,151,244,.25);border-radius:20px;background:rgba(31,79,216,.1)}.rg-audit__submit p{margin:0;color:rgba(255,255,255,.65);font-size:13px}.rg-audit button,.rg-audit__result-actions a{padding:13px 17px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:#1f4fd8;color:#fff;font:inherit;font-size:12px;font-weight:850;text-decoration:none;cursor:pointer}.rg-audit button:disabled{opacity:.38;cursor:not-allowed}
 .rg-audit__results{padding-top:30px}.rg-audit__result-top{padding:38px;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:38px;border:1px solid rgba(116,151,241,.27);border-radius:28px;background:linear-gradient(120deg,rgba(31,79,216,.2),rgba(255,255,255,.03))}.rg-audit__score{--score:0deg;width:180px;height:180px;padding:12px;border-radius:50%;background:conic-gradient(#648cff var(--score),rgba(255,255,255,.08) 0)}.rg-audit__score>div{width:100%;height:100%;display:grid;place-content:center;border-radius:50%;background:#07132d;text-align:center}.rg-audit__score strong{font-size:48px;line-height:.85}.rg-audit__score span{color:rgba(255,255,255,.55);font-size:12px}.rg-audit__result-top h1{margin:9px 0 10px;font-size:clamp(31px,5vw,52px);letter-spacing:-1.5px}.rg-audit__result-top p{max-width:620px;margin:0;color:rgba(255,255,255,.68);line-height:1.7}.rg-audit__breakdown,.rg-audit__priorities{margin-top:18px;padding:28px;border:1px solid rgba(255,255,255,.1);border-radius:24px;background:rgba(255,255,255,.03)}.rg-audit__breakdown h2,.rg-audit__priorities h2{margin:0 0 22px;font-size:25px}.rg-audit__breakdown>div{margin-top:15px}.rg-audit__breakdown p{display:flex;justify-content:space-between;margin:0 0 7px;color:rgba(255,255,255,.75);font-size:13px}.rg-audit__priorities>div{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.rg-audit__priorities article{padding:20px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:rgba(3,10,26,.38)}.rg-audit__priorities article>strong{color:#7399f8;font-size:11px}.rg-audit__priorities h3{margin:20px 0 8px}.rg-audit__priorities p{margin:0;color:rgba(255,255,255,.6);font-size:13px;line-height:1.65}.rg-audit__result-actions{margin-top:20px;display:flex;gap:9px;flex-wrap:wrap}.rg-audit__result-actions button{background:rgba(255,255,255,.045)}
-@media(max-width:760px){.rg-audit{padding-top:88px}.rg-audit__hero{padding:36px 0 28px;grid-template-columns:1fr}.rg-audit__hero h1{letter-spacing:-1.5px}.rg-audit__promise{grid-template-columns:auto 1fr}.rg-audit__progress{top:70px}.rg-audit fieldset{padding:18px}.rg-audit fieldset>div{grid-template-columns:1fr 1fr}.rg-audit__submit{align-items:stretch;flex-direction:column}.rg-audit__result-top{padding:26px 20px;grid-template-columns:1fr}.rg-audit__score{width:145px;height:145px}.rg-audit__priorities>div{grid-template-columns:1fr}.rg-audit__result-actions{flex-direction:column}.rg-audit__result-actions>*{text-align:center}.rg-audit__breakdown,.rg-audit__priorities{padding:22px 18px}}
-@media print{body{background:#fff!important}.rg-audit{padding:0;color:#111;background:#fff}.rg-audit__hero,.rg-audit__form,.rg-footer,header[role=banner],.rg-audit__result-actions{display:none!important}.rg-audit__results{display:block}.rg-audit__result-top,.rg-audit__breakdown,.rg-audit__priorities{border-color:#ddd;background:#fff;color:#111;break-inside:avoid}.rg-audit__result-top p,.rg-audit__priorities p{color:#444}.rg-audit__score>div{background:#fff}.rg-audit__breakdown p{color:#222}}
+.rg-audit__lead{margin-top:18px;padding:30px;display:grid;grid-template-columns:.85fr 1.15fr;gap:34px;border:1px solid rgba(116,151,241,.27);border-radius:24px;background:linear-gradient(120deg,rgba(31,79,216,.13),rgba(255,255,255,.025))}.rg-audit__lead>div>span,.rg-audit__success>span{color:#87a9ff;font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase}.rg-audit__lead h2{margin:9px 0 10px;font-size:28px}.rg-audit__lead>div>p,.rg-audit__success p{margin:0;color:rgba(255,255,255,.64);font-size:13px;line-height:1.7}.rg-audit__lead form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.rg-audit__lead form>input{min-width:0;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(3,10,26,.5);color:#fff;font:inherit}.rg-audit__lead form>input::placeholder{color:rgba(255,255,255,.42)}.rg-audit__lead form>button,.rg-audit__consent,.rg-audit__error{grid-column:1/-1}.rg-audit__consent{display:flex!important;gap:9px;padding:0!important;border:0!important;background:transparent!important;color:rgba(255,255,255,.62)!important;font-size:11px!important;line-height:1.5;text-align:left!important;cursor:pointer}.rg-audit__consent input{position:static!important;opacity:1!important;pointer-events:auto!important;margin-top:2px;accent-color:#527cf0}.rg-audit__trap{position:absolute!important;left:-9999px!important}.rg-audit__error{margin:0;color:#ff9d9d;font-size:12px}.rg-audit__success{grid-column:1/-1;text-align:center;padding:18px}
+@media(max-width:760px){.rg-audit{padding-top:88px}.rg-audit__hero{padding:36px 0 28px;grid-template-columns:1fr}.rg-audit__hero h1{letter-spacing:-1.5px}.rg-audit__promise{grid-template-columns:auto 1fr}.rg-audit__progress{top:70px}.rg-audit fieldset{padding:18px}.rg-audit fieldset>div{grid-template-columns:1fr 1fr}.rg-audit__submit{align-items:stretch;flex-direction:column}.rg-audit__result-top{padding:26px 20px;grid-template-columns:1fr}.rg-audit__score{width:145px;height:145px}.rg-audit__priorities>div{grid-template-columns:1fr}.rg-audit__result-actions{flex-direction:column}.rg-audit__result-actions>*{text-align:center}.rg-audit__breakdown,.rg-audit__priorities{padding:22px 18px}.rg-audit__lead{padding:22px 18px;grid-template-columns:1fr}.rg-audit__lead form{grid-template-columns:1fr}.rg-audit__lead form>*{grid-column:1!important}}
+@media print{body{background:#fff!important}.rg-audit{padding:0;color:#111;background:#fff}.rg-audit__hero,.rg-audit__form,.rg-footer,header[role=banner],.rg-audit__result-actions,.rg-audit__lead{display:none!important}.rg-audit__results{display:block}.rg-audit__result-top,.rg-audit__breakdown,.rg-audit__priorities{border-color:#ddd;background:#fff;color:#111;break-inside:avoid}.rg-audit__result-top p,.rg-audit__priorities p{color:#444}.rg-audit__score>div{background:#fff}.rg-audit__breakdown p{color:#222}}
 `;
