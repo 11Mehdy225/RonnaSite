@@ -1,6 +1,46 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import DOMPurify from "dompurify";
 import SEO from "../components/SEO.jsx";
+
+function RichProjectContent({ content }) {
+  const value = String(content || "").trim();
+  if (!value) return <p style={styles.p}>Les détails de cette réalisation seront bientôt disponibles.</p>;
+
+  if (/<[a-z][\s\S]*>/i.test(value)) {
+    return (
+      <div
+        className="rgRich"
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
+      />
+    );
+  }
+
+  const blocks = [];
+  let bullets = [];
+  const flushBullets = () => {
+    if (!bullets.length) return;
+    blocks.push(<ul key={`list-${blocks.length}`} className="rg-project-list">{bullets}</ul>);
+    bullets = [];
+  };
+
+  value.split("\n").forEach((raw, index) => {
+    const line = raw.trim();
+    if (!line) return flushBullets();
+    if (/^[-*]\s+/.test(line)) {
+      bullets.push(<li key={index}>{line.replace(/^[-*]\s+/, "")}</li>);
+      return;
+    }
+    flushBullets();
+    if (/^###\s+/.test(line)) blocks.push(<h3 key={index}>{line.replace(/^###\s+/, "")}</h3>);
+    else if (/^##\s+/.test(line)) blocks.push(<h2 key={index}>{line.replace(/^##\s+/, "")}</h2>);
+    else if (/^#\s+/.test(line)) blocks.push(<h2 key={index}>{line.replace(/^#\s+/, "")}</h2>);
+    else if (!/^---+$/.test(line)) blocks.push(<p key={index}>{line}</p>);
+  });
+  flushBullets();
+
+  return <div className="rgRich rg-project-copy">{blocks}</div>;
+}
 
 export default function RealisationDetail() {
 
@@ -45,7 +85,7 @@ export default function RealisationDetail() {
       <SEO
         title={item.title}
         description={item.excerpt || "Réalisation RONNA GROUP"}
-        canonical={`https://ronnagroup.com/realisations/${item.slug}`}
+        canonical={`https://ronnagroup.net/realisations/${item.slug}`}
         image={item.coverImage || "/favicon.PNG"}
         type="article"
         structuredData={{
@@ -54,9 +94,9 @@ export default function RealisationDetail() {
           name: item.title,
           description: item.excerpt || "",
           image: item.coverImage
-            ? (item.coverImage.startsWith("http") ? item.coverImage : `https://ronnagroup.com${item.coverImage}`)
-            : "https://ronnagroup.com/favicon.PNG",
-          creator: { "@type": "Organization", name: "RONNA GROUP", url: "https://ronnagroup.com" },
+            ? (item.coverImage.startsWith("http") ? item.coverImage : `https://ronnagroup.net${item.coverImage}`)
+            : "https://ronnagroup.net/favicon.PNG",
+          creator: { "@type": "Organization", name: "RONNA GROUP", url: "https://ronnagroup.net" },
         }}
       />
     )}
@@ -95,20 +135,7 @@ export default function RealisationDetail() {
 
             {/* contenu */}
             <div style={styles.content}>
-              {item.content
-                ? String(item.content)
-                    .split("\n")
-                    .filter(Boolean)
-                    .map((p, i) => (
-                      <p key={i} style={styles.p}>
-                        {p}
-                      </p>
-                    ))
-                : (
-                  <p style={styles.p}>
-                    Contenu à compléter dans MongoDB (champ <strong>content</strong>).
-                  </p>
-                )}
+              <RichProjectContent content={item.content} />
             </div>
 
             {/* galerie */}
@@ -250,7 +277,7 @@ function ProjectCtas({ item }) {
   const hasIos = !!links.ios;
 
   const secondary = hasWebsite
-    ? { label: "Visiter", action: () => open(links.website) }
+    ? { label: "Visiter le projet", action: () => open(links.website) }
     : hasAndroid
       ? { label: "Android", action: () => open(links.android) }
       : hasIos
@@ -267,13 +294,19 @@ function ProjectCtas({ item }) {
 
   return (
     <>
-      <button type="button" style={btnStyle(true)} onClick={() => navigate("/realisations")}>
-        ← Retour
+      <button
+        type="button"
+        style={btnStyle(true)}
+        onClick={() => navigate(`/contact?service=RONNA_WEB&subject=${encodeURIComponent(`Demande d’informations — ${item.title}`)}`)}
+      >
+        Discuter d’un projet similaire
       </button>
 
-      <button type="button" style={btnStyle(false)} onClick={secondary.action}>
-        {secondary.label}
-      </button>
+      {(hasWebsite || hasAndroid || hasIos) && (
+        <button type="button" style={btnStyle(false)} onClick={secondary.action}>
+          {secondary.label}
+        </button>
+      )}
     </>
   );
 }
@@ -320,7 +353,11 @@ const styles = {
   lead: { margin: "14px 0 0", color: "rgba(255,255,255,0.80)", lineHeight: 1.7, fontSize: 16 },
 
   ctaRow: { marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" },
-  content: { marginTop: 14 },
+  content: {
+    marginTop: 22,
+    padding: "18px clamp(0px, 2vw, 18px)",
+    borderTop: "1px solid rgba(255,255,255,0.08)"
+  },
   p: { margin: "0 0 12px", color: "rgba(255,255,255,0.80)", lineHeight: 1.85, fontSize: 15.5 },
 
   galleryGrid: { marginTop: 14, display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 },

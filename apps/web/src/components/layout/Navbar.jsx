@@ -1,4 +1,4 @@
-import logo from "../../assets/brands/logoRG.PNG";
+import logo from "../../assets/brands/logoRG-optimized.png";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -60,6 +60,7 @@ export default function Navbar() {
               key={item.label}
               to={item.to}
               onClick={() => setOpen(false)}
+              aria-current={location.pathname === item.to ? "page" : undefined}
               style={{
                 ...styles.link,
                 ...(location.pathname === item.to ? styles.linkActive : null)
@@ -107,6 +108,7 @@ export default function Navbar() {
                 key={item.label}
                 to={item.to}
                 onClick={() => setOpen(false)}
+                aria-current={location.pathname === item.to ? "page" : undefined}
                 style={{
                   ...styles.mobileLink,
                   ...(location.pathname === item.to ? styles.mobileLinkActive : null)

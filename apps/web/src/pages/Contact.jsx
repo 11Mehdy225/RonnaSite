@@ -334,7 +334,7 @@ useEffect(() => {
     <SEO
   title="Contact"
   description="Contactez Ronna Group pour toute collaboration ou partenariat."
-  canonical="https://ronnagroup.com/contact"
+  canonical="https://ronnagroup.net/contact"
 />
     <main style={styles.main}>
       <div style={styles.container}>

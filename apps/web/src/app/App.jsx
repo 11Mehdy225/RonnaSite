@@ -1,11 +1,14 @@
+import { Suspense, lazy } from "react";
 import { Routes, Route ,useLocation} from "react-router-dom";
 import { routes } from "./routes.jsx";
 import Footer from "../components/layout/Footer.jsx";
 import Navbar from "../components/layout/Navbar.jsx";
-import MentionsLegales from "../pages/MentionsLegales.jsx"
 import ScrollToTop from "../components/utils/ScrollToTop.jsx";
 import { Helmet } from "react-helmet-async";
 import DataVortexBackground from "../components/background/DataVortexBackground.jsx";
+
+const MentionsLegales = lazy(() => import("../pages/MentionsLegales.jsx"));
+const NotFound = lazy(() => import("../pages/NotFound.jsx"));
 
 
 // function renderRoutes(list) {
@@ -46,14 +49,18 @@ export default function App() {
         />
       </Helmet>
     {!isAdmin && <DataVortexBackground />}
-    <div className={isAdmin ? undefined : "rgPublicContent"}>
+    <div id={!isAdmin ? "contenu-principal" : undefined} className={isAdmin ? undefined : "rgPublicContent"}>
+    {!isAdmin && <a className="rg-skip-link" href="#contenu-principal">Aller au contenu</a>}
     {!isAdmin && <Navbar />}
       {/* <Navbar /> */}
       <ScrollToTop />
-      <Routes>
-        <Route path="/mentions-legales" element={<MentionsLegales />} />
-        {renderRoutes(routes)}
-      </Routes>
+      <Suspense fallback={<div className="rg-page-loader" role="status">Chargement…</div>}>
+        <Routes>
+          <Route path="/mentions-legales" element={<MentionsLegales />} />
+          {renderRoutes(routes)}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
       {!isAdmin && <Footer />}
     </div>
     </div>

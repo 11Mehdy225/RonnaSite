@@ -88,9 +88,9 @@ export default function Realisations() {
   return (
     <>
      <SEO
-  title="Realisations"
-  description="Nos realisations , projets ."
-  canonical="https://ronnagroup.com/realisations"
+  title="Réalisations"
+  description="Découvrez les applications, plateformes et solutions numériques conçues par RONNA GROUP."
+  canonical="https://ronnagroup.net/realisations"
 />
     <main style={styles.page}>
       <header style={styles.hero}>
@@ -143,8 +143,7 @@ export default function Realisations() {
           <div style={styles.stateCard}>
             <div style={styles.stateTitle}>Aucune réalisation</div>
             <div style={styles.stateText}>
-              Ajoute des documents dans <strong>projects</strong>{" "}
-              (published=true) pour les afficher ici.
+              De nouvelles réalisations seront bientôt présentées ici.
             </div>
           </div>
         )}

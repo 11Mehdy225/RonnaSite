@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import p1 from "../assets/groupe/loic1.JPG";
+import p1 from "../assets/groupe/loic1-optimized.jpg";
 import badgePmp from "../assets/badges/pmp.png";
 import badgePspo from "../assets/badges/pspo.png";
 import SEO from "../components/SEO.jsx";
@@ -15,7 +15,7 @@ export default function Groupe() {
     <SEO
       title="Le Groupe"
       description="Découvrez la vision, le fondateur et les ambitions de Ronna Group en Côte d’Ivoire."
-      canonical="https://ronnagroup.com/groupe"
+      canonical="https://ronnagroup.net/groupe"
     />
     <main style={styles.page}>
       <section className="rg-twoCol" style={styles.container}>

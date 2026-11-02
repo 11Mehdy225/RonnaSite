@@ -112,7 +112,7 @@ export default function Actualites() {
          <SEO
   title="Actualite"
   description="informations."
-  canonical="https://ronnagroup.com/actualites"
+  canonical="https://ronnagroup.net/actualites"
 />
     <main style={styles.page}>
       <header style={styles.hero}>

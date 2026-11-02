@@ -7,7 +7,7 @@ import s4 from "../assets/brands/services/dev.PNG";
 import s5 from "../assets/brands/services/audit.PNG";
 import s6 from "../assets/brands/services/sec.PNG";
 import s7 from "../assets/brands/services/digital.PNG";
-import s8 from "../assets/brands/services/cons.PNG";
+import s8 from "../assets/brands/services/cons-optimized.jpg";
 import SEO from "../components/SEO"; 
 
 function ServiceCard({ item, index, onActive, isActive }) {
@@ -45,7 +45,7 @@ useEffect(() => {
 >
 
       <div style={styles.media}>
-        <img src={item.image} alt={item.title} style={styles.image} />
+        <img src={item.image} alt={item.title} style={styles.image} loading="lazy" decoding="async" />
       </div>
 
       <div style={styles.content}>
@@ -174,7 +174,7 @@ export default function Services() {
       <SEO
   title="Services"
   description="Nos services , projets ."
-  canonical="https://ronnagroup.com/services"
+  canonical="https://ronnagroup.net/services"
 />
     <main style={styles.page}>
       <header style={styles.hero}>

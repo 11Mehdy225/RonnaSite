@@ -62,8 +62,8 @@ export default function Footer() {
               </div>
               <div style={styles.metaRow}>
                 <span style={styles.metaLabel}>Email</span>
-                <a style={styles.metaValue} href="ronnagroup4u@gmail.com">
-                  ronnagroup4u@gmail.com
+                <a style={styles.metaValue} href="mailto:contact@ronnagroup.net">
+                  contact@ronnagroup.net
                 </a>
               </div>
               <div style={styles.metaRow}>
@@ -133,17 +133,8 @@ export default function Footer() {
             </div>
 
             <div style={styles.socialRow}>
-              <a href="#" style={styles.social}>
-                LinkedIn
-              </a>
-              <a href="https://www.instagram.com/ronna_group?igsh=NGE3b3k1NzByMnA1&utm_source=qr" style={styles.social}>
+              <a href="https://www.instagram.com/ronna_group?igsh=NGE3b3k1NzByMnA1&utm_source=qr" target="_blank" rel="noopener noreferrer" style={styles.social}>
                 Instagram
-              </a>
-              <a href="#" style={styles.social}>
-                facebook
-              </a>
-              <a href="#" style={styles.social}>
-                tiktok
               </a>
             </div>
           </div>
@@ -171,8 +162,8 @@ export default function Footer() {
               </div>
               <div style={styles.metaRow}>
                 <span style={styles.metaLabel}>Email</span>
-                <a style={styles.metaValue} href="mailto:llkkkk@gmail.com">
-                  llkkkk@gmail.com
+                <a style={styles.metaValue} href="mailto:contact@ronnagroup.net">
+                  contact@ronnagroup.net
                 </a>
               </div>
               <div style={styles.metaRow}>
@@ -233,14 +224,8 @@ export default function Footer() {
             onToggle={() => toggle("social")}
           >
             <div style={styles.socialRow}>
-              <a href="#" style={styles.social}>
-                LinkedIn
-              </a>
-              <a href="#" style={styles.social}>
-                Facebook
-              </a>
-              <a href="#" style={styles.social}>
-                YouTube
+              <a href="https://www.instagram.com/ronna_group?igsh=NGE3b3k1NzByMnA1&utm_source=qr" target="_blank" rel="noopener noreferrer" style={styles.social}>
+                Instagram
               </a>
             </div>
           </Accordion>
@@ -259,7 +244,7 @@ export default function Footer() {
               Mentions légales
             </Link>
             <span style={styles.sep}>•</span>
-            <a href="mailto:llkkkk@gmail.com" style={styles.bottomLink}>
+            <a href="mailto:contact@ronnagroup.net" style={styles.bottomLink}>
               Support
             </a>
           </div>

@@ -57,7 +57,7 @@ useEffect(() => {
       <SEO
         title={item.title}
         description={item.excerpt || "Actualité RONNA GROUP"}
-        canonical={`https://ronnagroup.com/actualites/${item.slug}`}
+        canonical={`https://ronnagroup.net/actualites/${item.slug}`}
         image={item.coverImage || "/favicon.PNG"}
         type="article"
         structuredData={{
@@ -66,11 +66,11 @@ useEffect(() => {
           headline: item.title,
           description: item.excerpt || "",
           image: item.coverImage
-            ? (item.coverImage.startsWith("http") ? item.coverImage : `https://ronnagroup.com${item.coverImage}`)
-            : "https://ronnagroup.com/favicon.PNG",
+            ? (item.coverImage.startsWith("http") ? item.coverImage : `https://ronnagroup.net${item.coverImage}`)
+            : "https://ronnagroup.net/favicon.PNG",
           datePublished: item.publishedAt || item.createdAt,
           dateModified: item.updatedAt || item.publishedAt || item.createdAt,
-          publisher: { "@type": "Organization", name: "RONNA GROUP", logo: { "@type": "ImageObject", url: "https://ronnagroup.com/favicon.PNG" } },
+          publisher: { "@type": "Organization", name: "RONNA GROUP", logo: { "@type": "ImageObject", url: "https://ronnagroup.net/favicon.PNG" } },
         }}
       />
     )}

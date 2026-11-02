@@ -30,7 +30,7 @@ export default function Home() {
      <SEO
   title="Accueil"
   description="Ronna Group développe des projets stratégiques et des actions solidaires en Côte d’Ivoire."
-  canonical="https://ronnagroup.com/"
+  canonical="https://ronnagroup.net/"
 />
     <main>
       <section style={styles.hero}>

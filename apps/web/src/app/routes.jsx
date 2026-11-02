@@ -1,25 +1,27 @@
-import Home from "../pages/Home.jsx";
-import Contact from "../pages/Contact.jsx";
-import Groupe from "../pages/Groupe.jsx";
-import Services from "../pages/Services.jsx";
-import Realisations from "../pages/Realisations.jsx";
-import Actualites from "../pages/Actualites.jsx";
-import ActualiteDetail from "../pages/ActualiteDetail.jsx";
-import Fondation from "../pages/Fondation.jsx";
-import RealisationDetail from "../pages/RealisationDetail.jsx";
+import { lazy } from "react";
 
-import AdminLogin from "../components/admin/AdminLogin.jsx";
-import AdminQuotes from "../components/admin/AdminQuotes.jsx";
-import RequireAdmin from "../components/admin/RequireAdmin.jsx";
-import AdminLayout from "../pages/admin/AdminLayout.jsx";
-import AdminNews from "../pages/admin/AdminNews.jsx";
-import AdminNewsForm from "../pages/admin/AdminNewsForm.jsx";
-import AdminProjects from "../pages/admin/AdminProjects.jsx";
-import AdminFoundation from "../pages/admin/AdminFoundation.jsx";
-import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
-import AdminProjectsForm from "../pages/admin/AdminProjectsForm.jsx";
-import AdminFoundationForm from "../pages/admin/AdminFoundationForm.jsx";
-import AdminSettings from "../pages/admin/AdminSettings.jsx";
+const Home = lazy(() => import("../pages/Home.jsx"));
+const Contact = lazy(() => import("../pages/Contact.jsx"));
+const Groupe = lazy(() => import("../pages/Groupe.jsx"));
+const Services = lazy(() => import("../pages/Services.jsx"));
+const Realisations = lazy(() => import("../pages/Realisations.jsx"));
+const Actualites = lazy(() => import("../pages/Actualites.jsx"));
+const ActualiteDetail = lazy(() => import("../pages/ActualiteDetail.jsx"));
+const Fondation = lazy(() => import("../pages/Fondation.jsx"));
+const RealisationDetail = lazy(() => import("../pages/RealisationDetail.jsx"));
+
+const AdminLogin = lazy(() => import("../components/admin/AdminLogin.jsx"));
+const AdminQuotes = lazy(() => import("../components/admin/AdminQuotes.jsx"));
+const RequireAdmin = lazy(() => import("../components/admin/RequireAdmin.jsx"));
+const AdminLayout = lazy(() => import("../pages/admin/AdminLayout.jsx"));
+const AdminNews = lazy(() => import("../pages/admin/AdminNews.jsx"));
+const AdminNewsForm = lazy(() => import("../pages/admin/AdminNewsForm.jsx"));
+const AdminProjects = lazy(() => import("../pages/admin/AdminProjects.jsx"));
+const AdminFoundation = lazy(() => import("../pages/admin/AdminFoundation.jsx"));
+const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard.jsx"));
+const AdminProjectsForm = lazy(() => import("../pages/admin/AdminProjectsForm.jsx"));
+const AdminFoundationForm = lazy(() => import("../pages/admin/AdminFoundationForm.jsx"));
+const AdminSettings = lazy(() => import("../pages/admin/AdminSettings.jsx"));
 
 
 

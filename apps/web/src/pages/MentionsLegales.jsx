@@ -40,7 +40,7 @@ export default function MentionsLegales() {
             <h2 style={styles.h2}>Contact</h2>
             <p style={styles.p}>
               <strong>Téléphone :</strong> +225 01 5170 4444 <br />
-              <strong>Email :</strong> contact@ronnagroup.com
+              <strong>Email :</strong> contact@ronnagroup.net
             </p>
           </section>
         </section>
@@ -100,7 +100,7 @@ export default function MentionsLegales() {
           <h2 style={styles.h2}>Données personnelles</h2>
           <p style={styles.p}>
             Pour toute question relative à la protection des données personnelles ou à l’exercice de
-            vos droits, vous pouvez nous contacter à l’adresse : <strong>contact@ronnagroup.com</strong>.
+            vos droits, vous pouvez nous contacter à l’adresse : <strong>contact@ronnagroup.net</strong>.
           </p>
         </section>
       </div>

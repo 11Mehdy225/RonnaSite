@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import mission09 from "../assets/fondation/mission09.png";
+import mission09 from "../assets/fondation/mission09-optimized.jpg";
 import SEO from "../components/SEO.jsx"; 
 import { apiUrl } from "../lib/api.js";
 
@@ -238,7 +238,7 @@ export default function Fondation() {
     <SEO
   title="Fondation"
   description="La Fondation Ronna soutient des actions sociales, éducatives et communautaires."
-  canonical="https://ronnagroup.com/fondation"
+  canonical="https://ronnagroup.net/fondation"
 />
     <main style={styles.page}>
       {/* HERO sticky */}

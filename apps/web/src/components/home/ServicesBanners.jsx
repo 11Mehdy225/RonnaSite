@@ -1,6 +1,6 @@
 import audit from "../../assets/brands/services/audit.PNG" ;
 import web from "../../assets/brands/services/web.PNG";
-import conseil from "../../assets/brands/services/cons.PNG";
+import conseil from "../../assets/brands/services/cons-optimized.jpg";
 import dev from "../../assets/brands/services/dev.PNG";
 import digital from "../../assets/brands/services/digital.PNG";
 import formation from "../../assets/brands/services/form.PNG";

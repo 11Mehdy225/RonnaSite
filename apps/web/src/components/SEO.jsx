@@ -8,7 +8,7 @@ export default function SEO({
   type = "website",
   structuredData,
 }) {
-  const siteUrl = "https://ronnagroup.com";
+  const siteUrl = "https://ronnagroup.net";
   const fullTitle = title.includes("RONNA") ? title : `${title} | RONNA GROUP`;
   const fullImage = image.startsWith("http") ? image : `${siteUrl}${image.startsWith("/") ? image : `/${image}`}`;
   const schema = structuredData || {
