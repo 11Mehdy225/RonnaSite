@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
+import SEO from "../components/SEO.jsx";
 
 function formatDate(iso) {
   try {
@@ -51,6 +52,28 @@ useEffect(() => {
   const safeHtml = DOMPurify.sanitize(item?.content || "");
 
   return (
+    <>
+    {item && (
+      <SEO
+        title={item.title}
+        description={item.excerpt || "Actualité RONNA GROUP"}
+        canonical={`https://ronnagroup.com/actualites/${item.slug}`}
+        image={item.coverImage || "/favicon.PNG"}
+        type="article"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "NewsArticle",
+          headline: item.title,
+          description: item.excerpt || "",
+          image: item.coverImage
+            ? (item.coverImage.startsWith("http") ? item.coverImage : `https://ronnagroup.com${item.coverImage}`)
+            : "https://ronnagroup.com/favicon.PNG",
+          datePublished: item.publishedAt || item.createdAt,
+          dateModified: item.updatedAt || item.publishedAt || item.createdAt,
+          publisher: { "@type": "Organization", name: "RONNA GROUP", logo: { "@type": "ImageObject", url: "https://ronnagroup.com/favicon.PNG" } },
+        }}
+      />
+    )}
     <main style={styles.page}>
       <div style={styles.container}>
         <button type="button" style={styles.back} onClick={() => navigate(-1)}>
@@ -106,6 +129,7 @@ useEffect(() => {
         )}
       </div>
     </main>
+    </>
   );
 }
 

@@ -6,6 +6,7 @@ import digital from "../../assets/brands/services/digital.PNG";
 import formation from "../../assets/brands/services/form.PNG";
 import securite from "../../assets/brands/services/sec.PNG";
 import tv from "../../assets/brands/services/tv.PNG";
+import { Link } from "react-router-dom";
 
 
 const SERVICES = [
@@ -34,7 +35,7 @@ export default function ServicesBanners() {
           {SERVICES.map((s) => (
             <article key={s.name} style={styles.card}>
               <div style={styles.cardTop}>
-                <img src={s.icon} alt={s.name} style={styles.icon} />
+                <img src={s.icon} alt={s.name} style={styles.icon} loading="lazy" decoding="async" />
                 <div style={styles.cardText}>
                   <div style={styles.title}>{s.name}</div>
                   <div style={styles.desc}>{s.desc}</div>
@@ -43,7 +44,7 @@ export default function ServicesBanners() {
 
               <div style={styles.cardBottom}>
                 {/* lien plus tard vers /services */}
-                <a href="/services" style={styles.link}>Découvrir</a>
+                <Link to="/services" style={styles.link}>Découvrir</Link>
               </div>
             </article>
           ))}

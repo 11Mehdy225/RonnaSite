@@ -1,13 +1,30 @@
 import HeroVortex from "../components/hero/HeroVortex.jsx";
 import ServicesBanners from "../components/home/ServicesBanners.jsx";
 import ContactTeaser from "../components/home/ContactTeaser.jsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import SEO from "../components/SEO.jsx"; 
+import { apiUrl } from "../lib/api.js";
+import acoLogo from "../assets/partners/aco-optimized.jpg";
 
 export default function Home() {
+  const [projects, setProjects] = useState([]);
+
   useEffect(() => {
-  document.title = "RonnaGroup | Acceuil";
-}, []);
+    let cancelled = false;
+
+    fetch(apiUrl("/api/projects?limit=3&page=1"))
+      .then((response) => response.json())
+      .then((json) => {
+        if (!cancelled && Array.isArray(json?.items)) setProjects(json.items.slice(0, 3));
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <>
      <SEO
@@ -33,14 +50,68 @@ export default function Home() {
 
       <section id="projets" style={styles.section}>
         <div style={styles.container}>
-          <h2 style={styles.h2}>Nos realisations</h2>
-          <div style={styles.cardBig}>Argos • Servizio • Gboro • Fondation Ronna • Acoeur ouvert podcast</div>
+          <div style={styles.sectionHead}>
+            <div>
+              <div style={styles.kicker}>Projets livrés</div>
+              <h2 style={styles.h2}>Nos réalisations</h2>
+            </div>
+            <Link to="/realisations" style={styles.textLink}>Voir toutes les réalisations →</Link>
+          </div>
+
+          {projects.length > 0 ? (
+            <div style={styles.projectsGrid} className="rg-home-projects">
+              {projects.map((project) => (
+                <Link key={project._id} to={`/realisations/${project.slug}`} style={styles.projectCard}>
+                  {project.coverImage ? (
+                    <img
+                      src={project.coverImage}
+                      alt={project.title}
+                      style={styles.projectImg}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <div style={styles.projectPlaceholder}>RONNA GROUP</div>
+                  )}
+                  <div style={styles.projectBody}>
+                    <div style={styles.projectCategory}>{project.category || "Réalisation"}</div>
+                    <h3 style={styles.projectTitle}>{project.title}</h3>
+                    <p style={styles.projectExcerpt}>{project.excerpt}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div style={styles.emptyCard}>
+              Découvrez les projets conçus et accompagnés par Ronna Group.
+              <Link to="/realisations" style={styles.inlineLink}>Explorer nos réalisations →</Link>
+            </div>
+          )}
         </div>
       </section>
-      <section id="Partenaires" style={styles.section}>
+
+      <section id="partenaires" style={styles.sectionAlt}>
         <div style={styles.container}>
-          <h2 style={styles.h2}>Nos Partenaires</h2>
-          <div style={styles.cardBig}>---------------------------------------------</div>
+          <div style={styles.partnerGrid} className="rg-home-partner">
+            <div>
+              <div style={styles.kicker}>Collaboration</div>
+              <h2 style={styles.h2}>Ils nous font confiance</h2>
+              <p style={styles.partnerText}>
+                Des collaborations fondées sur l’écoute, la qualité d’exécution et la recherche d’un impact durable.
+              </p>
+            </div>
+            <Link
+              to="/actualites/partenariat-acoeurouvert-ronna-group"
+              style={styles.partnerCard}
+              aria-label="Découvrir le partenariat avec A Cœur Ouvert"
+            >
+              <img src={acoLogo} alt="A Cœur Ouvert" style={styles.partnerLogo} loading="lazy" decoding="async" />
+              <div>
+                <strong style={styles.partnerName}>A Cœur Ouvert</strong>
+                <div style={styles.partnerLabel}>Partenaire</div>
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -100,7 +171,11 @@ const styles = {
   },
   section: { padding: "38px 0" },
   container: { maxWidth: 1200, margin: "0 auto", padding: "0 18px" },
-  h2: { margin: "0 0 16px", fontSize: 22 },
+  sectionAlt: { padding: "44px 0", background: "rgba(255,255,255,0.02)", borderBlock: "1px solid rgba(255,255,255,0.08)" },
+  sectionHead: { display: "flex", justifyContent: "space-between", gap: 18, alignItems: "end", marginBottom: 18, flexWrap: "wrap" },
+  kicker: { color: "rgba(95,183,255,0.92)", fontSize: 12, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 7 },
+  h2: { margin: 0, fontSize: 26 },
+  textLink: { color: "rgba(147,197,253,0.95)", fontWeight: 700, fontSize: 14 },
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -112,10 +187,26 @@ const styles = {
     border: "1px solid rgba(255,255,255,0.10)",
     background: "rgba(255,255,255,0.03)"
   },
-  cardBig: {
-    padding: 18,
-    borderRadius: 18,
+  projectsGrid: { display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 14 },
+  projectCard: {
+    minWidth: 0,
+    overflow: "hidden",
+    borderRadius: 22,
     border: "1px solid rgba(255,255,255,0.10)",
     background: "rgba(255,255,255,0.03)"
-  }
+  },
+  projectImg: { width: "100%", height: 210, objectFit: "cover", display: "block" },
+  projectPlaceholder: { height: 210, display: "grid", placeItems: "center", color: "rgba(255,255,255,0.45)", background: "rgba(31,79,216,0.12)", letterSpacing: 2 },
+  projectBody: { padding: 16 },
+  projectCategory: { color: "rgba(95,183,255,0.9)", fontSize: 12, textTransform: "uppercase", letterSpacing: 1 },
+  projectTitle: { margin: "8px 0 0", fontSize: 18, lineHeight: 1.3 },
+  projectExcerpt: { margin: "8px 0 0", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, fontSize: 14 },
+  emptyCard: { padding: 20, borderRadius: 20, border: "1px solid rgba(255,255,255,0.10)", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.75)", display: "grid", gap: 10 },
+  inlineLink: { color: "rgba(147,197,253,0.95)", fontWeight: 700 },
+  partnerGrid: { display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 28, alignItems: "center" },
+  partnerText: { margin: "10px 0 0", color: "rgba(255,255,255,0.72)", lineHeight: 1.7, maxWidth: 650 },
+  partnerCard: { display: "flex", alignItems: "center", gap: 16, padding: 16, borderRadius: 22, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)" },
+  partnerLogo: { width: 86, height: 86, objectFit: "contain", borderRadius: 18, background: "white" },
+  partnerName: { display: "block", fontSize: 17 },
+  partnerLabel: { marginTop: 5, color: "rgba(255,255,255,0.62)", fontSize: 13 }
 };

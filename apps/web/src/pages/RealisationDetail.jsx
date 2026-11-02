@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import SEO from "../components/SEO.jsx";
 
 export default function RealisationDetail() {
 
@@ -39,6 +40,26 @@ export default function RealisationDetail() {
   }, [slug]);
 
   return (
+    <>
+    {item && (
+      <SEO
+        title={item.title}
+        description={item.excerpt || "Réalisation RONNA GROUP"}
+        canonical={`https://ronnagroup.com/realisations/${item.slug}`}
+        image={item.coverImage || "/favicon.PNG"}
+        type="article"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "CreativeWork",
+          name: item.title,
+          description: item.excerpt || "",
+          image: item.coverImage
+            ? (item.coverImage.startsWith("http") ? item.coverImage : `https://ronnagroup.com${item.coverImage}`)
+            : "https://ronnagroup.com/favicon.PNG",
+          creator: { "@type": "Organization", name: "RONNA GROUP", url: "https://ronnagroup.com" },
+        }}
+      />
+    )}
     <main style={styles.page}>
       <div style={styles.container}>
         <button type="button" style={styles.back} onClick={() => navigate(-1)}>
@@ -102,6 +123,7 @@ export default function RealisationDetail() {
         )}
       </div>
     </main>
+    </>
   );
 }
 

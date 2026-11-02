@@ -1,4 +1,5 @@
 import bgImg from "../../assets/home/contact-teaser.jpg";
+import { Link } from "react-router-dom";
 
 
 export default function ContactTeaser() {
@@ -18,12 +19,12 @@ export default function ContactTeaser() {
             </p>
 
             <div style={styles.actions}>
-              <a href="/contact" style={styles.primary}>
+              <Link to="/contact" style={styles.primary}>
                 Nous écrire
-              </a>
-              <a href="/services" style={styles.secondary}>
+              </Link>
+              <Link to="/services" style={styles.secondary}>
                 Nos services
-              </a>
+              </Link>
             </div>
           </div>
         </div>

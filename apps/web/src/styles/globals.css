@@ -79,6 +79,8 @@ html { scroll-behavior: smooth; }
   .rg-detail-gallery-img { height: auto !important; max-height: 360px; }
   .rg-founder-photo { height: auto !important; max-height: 560px; }
   .rg-hero-vortex { width: 100% !important; min-height: 340px !important; }
+  .rg-home-projects,
+  .rg-home-partner { grid-template-columns: 1fr !important; }
 }
 
 @media (max-width: 420px) {

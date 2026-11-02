@@ -49,6 +49,41 @@ export default function AdminQuotes() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
+  const exportCsv = () => {
+    const rows = filtered.map((quote) => ({
+      date: quote.createdAt ? new Date(quote.createdAt).toLocaleString("fr-FR") : "",
+      statut: quote.status || "NEW",
+      nom: quote.fullName || "",
+      email: quote.email || "",
+      telephone: quote.phone || "",
+      organisation: quote.company || "",
+      fonction: quote.role || "",
+      service: quote.service || "",
+      objet: quote.subject || "",
+      message: quote.message || "",
+      notes: quote.notes || "",
+    }));
+    if (!rows.length) return;
+
+    const headers = Object.keys(rows[0]);
+    const escapeCell = (value) => {
+      const raw = String(value ?? "");
+      const safe = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
+      return `"${safe.replaceAll('"', '""')}"`;
+    };
+    const csv = [
+      headers.join(";"),
+      ...rows.map((row) => headers.map((header) => escapeCell(row[header])).join(";")),
+    ].join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `demandes-ronna-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
 const updateQuote = async (id, patch) => {
   // const res = await fetch(`/api/admin/quotes/${id}`, {
   //   method: "PATCH",
@@ -125,6 +160,9 @@ const onLogout = async () => {
 
           <button type="button" style={styles.btnGhost} onClick={load}>
             Rafraîchir
+          </button>
+          <button type="button" style={styles.btnGhost} onClick={exportCsv} disabled={filtered.length === 0}>
+            Exporter CSV
           </button>
           <button type="button" style={styles.btnDanger} onClick={onLogout}>
             Déconnexion

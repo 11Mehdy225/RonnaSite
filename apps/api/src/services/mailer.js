@@ -150,7 +150,8 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
-function buildHtml({ type, name, email, phone, subject, message, meta, id }) {
+function buildHtml({ type, name, fullName, email, phone, company, role, service, subject, message, meta, id }) {
+  const displayName = fullName || name || "—";
   const metaLines = meta && typeof meta === "object"
     ? Object.entries(meta)
         .map(([k, v]) => `<li><strong>${escapeHtml(k)}:</strong> ${escapeHtml(typeof v === "string" ? v : JSON.stringify(v))}</li>`)
@@ -161,9 +162,12 @@ function buildHtml({ type, name, email, phone, subject, message, meta, id }) {
     <div style="font-family:Arial,sans-serif;line-height:1.5">
       <h2>${type === "DEVIS" ? "Nouvelle demande de devis" : "Nouveau message de contact"}</h2>
       <p><strong>ID:</strong> ${escapeHtml(id)}</p>
-      <p><strong>Nom:</strong> ${escapeHtml(name)}</p>
+      <p><strong>Nom:</strong> ${escapeHtml(displayName)}</p>
       <p><strong>Email:</strong> ${escapeHtml(email)}</p>
       <p><strong>Téléphone:</strong> ${escapeHtml(phone || "-")}</p>
+      ${company ? `<p><strong>Organisation:</strong> ${escapeHtml(company)}</p>` : ""}
+      ${role ? `<p><strong>Fonction:</strong> ${escapeHtml(role)}</p>` : ""}
+      ${service ? `<p><strong>Service:</strong> ${escapeHtml(service)}</p>` : ""}
       <p><strong>Objet:</strong> ${escapeHtml(subject || "-")}</p>
       <hr/>
       <p style="white-space:pre-wrap">${escapeHtml(message)}</p>
@@ -192,6 +196,33 @@ export async function sendContactMail({ to, payload, id }) {
     subject,
     html,
     replyTo
+  });
+
+  return { sent: true };
+}
+
+export async function sendContactAcknowledgement({ payload, id }) {
+  const t = getTransporter();
+  if (!t || !payload?.email) return { skipped: true };
+
+  const from = process.env.MAIL_FROM || `"RONNA GROUP" <contact@ronna-grp.com>`;
+  const displayName = payload.fullName || payload.name || "";
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#13213c">
+      <h2 style="color:#1f4fd8">Nous avons bien reçu votre demande</h2>
+      <p>Bonjour ${escapeHtml(displayName)},</p>
+      <p>Merci d’avoir contacté RONNA GROUP. Votre demande a bien été enregistrée et notre équipe reviendra vers vous rapidement.</p>
+      <p><strong>Référence :</strong> ${escapeHtml(id)}</p>
+      <p style="margin-top:24px">L’équipe RONNA GROUP</p>
+    </div>
+  `;
+
+  await t.sendMail({
+    from,
+    to: payload.email,
+    subject: "Nous avons bien reçu votre demande | RONNA GROUP",
+    html,
+    replyTo: process.env.MAIL_TO || undefined,
   });
 
   return { sent: true };

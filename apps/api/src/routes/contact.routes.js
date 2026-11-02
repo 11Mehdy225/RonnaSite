@@ -105,7 +105,7 @@ import express from "express";
 import { getDb } from "../config/db.js";
 import { ContactInput } from "../validators/contact.schema.js";
 import { quoteRateLimit } from "../middleware/rateLimit.js";
-import { sendContactMail } from "../services/mailer.js";
+import { sendContactAcknowledgement, sendContactMail } from "../services/mailer.js";
 
 const router = express.Router();
 
@@ -141,12 +141,18 @@ router.post("/contact", quoteRateLimit, async (req, res) => {
     const result = await col.insertOne(doc);
     const id = result.insertedId.toString();
 
-    // Email soft-fail (ne bloque pas)
+    // Emails soft-fail : notification équipe + accusé de réception demandeur.
     try {
-      await sendContactMail({
-        to: process.env.MAIL_TO,
-        payload: { ...doc, _id: id },
-        id,
+      const mailResults = await Promise.allSettled([
+        sendContactMail({
+          to: process.env.MAIL_TO,
+          payload: { ...doc, _id: id },
+          id,
+        }),
+        sendContactAcknowledgement({ payload: doc, id }),
+      ]);
+      mailResults.forEach((result) => {
+        if (result.status === "rejected") console.warn("[MAIL] soft fail:", result.reason?.message || result.reason);
       });
     } catch (e) {
       console.warn("[MAIL] soft fail:", e?.message || e);

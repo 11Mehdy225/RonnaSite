@@ -3,6 +3,15 @@ import mission09 from "../assets/fondation/mission09.png";
 import SEO from "../components/SEO.jsx"; 
 import { apiUrl } from "../lib/api.js";
 
+const EMPTY_DONATION = {
+  fullName: "",
+  email: "",
+  phone: "",
+  donationType: "ONE_TIME",
+  amount: "",
+  consent: false,
+};
+
 function toDateLabel(iso) {
   if (!iso) return "—";
   try {
@@ -58,6 +67,9 @@ export default function Fondation() {
   const [active, setActive] = useState(null); // { ...item, details? }
   const [activeLoading, setActiveLoading] = useState(false);
   const [activeError, setActiveError] = useState(null);
+  const [donation, setDonation] = useState({ ...EMPTY_DONATION });
+  const [donationSubmitting, setDonationSubmitting] = useState(false);
+  const [donationNotice, setDonationNotice] = useState(null);
 
   // Loader volontaire
   useEffect(() => {
@@ -145,6 +157,66 @@ export default function Fondation() {
     setActiveLoading(false);
   };
 
+  const updateDonation = (field, value) => {
+    setDonation((current) => ({ ...current, [field]: value }));
+    setDonationNotice(null);
+  };
+
+  const submitDonation = async (event) => {
+    event.preventDefault();
+    if (donationSubmitting) return;
+
+    const amount = Number(String(donation.amount).replace(/\s/g, ""));
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(donation.email.trim());
+    if (
+      donation.fullName.trim().length < 2 ||
+      !validEmail ||
+      donation.phone.trim().length < 6 ||
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      !donation.consent
+    ) {
+      setDonationNotice({ type: "error", text: "Merci de compléter tous les champs et d’accepter d’être recontacté." });
+      return;
+    }
+
+    setDonationSubmitting(true);
+    setDonationNotice(null);
+
+    try {
+      const donationLabel = donation.donationType === "MONTHLY" ? "Don mensuel" : "Don unique";
+      const response = await fetch(apiUrl("/api/contact"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "CONTACT",
+          fullName: donation.fullName.trim(),
+          email: donation.email.trim(),
+          phone: donation.phone.trim(),
+          company: "Particulier",
+          role: "Donateur",
+          service: "AUTRE",
+          subject: "Intention de don à la Fondation Ronna",
+          message: `${donationLabel} — montant indicatif : ${amount.toLocaleString("fr-FR")} FCFA. Merci de recontacter cette personne pour finaliser le don.`,
+          consent: true,
+          honeypot: "",
+        }),
+      });
+      const json = await response.json().catch(() => ({}));
+      if (!response.ok || json?.ok === false) throw new Error(json?.message || "Envoi impossible");
+
+      setDonation({ ...EMPTY_DONATION });
+      setDonationNotice({
+        type: "success",
+        text: `Merci. Votre intention de don a été transmise${json?.id ? ` (référence ${json.id})` : ""}. Notre équipe vous recontactera pour la finaliser.`,
+      });
+    } catch {
+      setDonationNotice({ type: "error", text: "L’envoi a échoué. Merci de réessayer ou de passer par la page Contact." });
+    } finally {
+      setDonationSubmitting(false);
+    }
+  };
+
   if (pageLoading) {
     return (
       <main style={styles.loaderPage}>
@@ -185,7 +257,7 @@ export default function Fondation() {
           <div style={styles.donateStripLeft} className="donateStripIntro">
             <div style={styles.donateTitle}>Faire un don</div>
             <div style={styles.donateHint}>
-              Votre contribution soutient nos actions. 
+              Transmettez votre intention de don. Notre équipe vous recontactera pour la finaliser en toute sécurité.
             </div>
           </div>
           <style>{`
@@ -202,20 +274,31 @@ export default function Fondation() {
     }
   `}</style>
 
-          <form onSubmit={(e) => e.preventDefault()} style={styles.donateStripForm} className="donateStripForm">
-            <Field label="Nom" placeholder="Votre nom" />
-            <Field label="Email" type="email" placeholder="vous@email.com" />
-            <Field label="Téléphone" placeholder="+225 ..." />
+          <form onSubmit={submitDonation} style={styles.donateStripForm} className="donateStripForm">
+            <Field label="Nom" placeholder="Votre nom" value={donation.fullName} onChange={(value) => updateDonation("fullName", value)} />
+            <Field label="Email" type="email" placeholder="vous@email.com" value={donation.email} onChange={(value) => updateDonation("email", value)} />
+            <Field label="Téléphone" type="tel" placeholder="+225 ..." value={donation.phone} onChange={(value) => updateDonation("phone", value)} />
             <SelectField
               label="Type"
+              value={donation.donationType}
+              onChange={(value) => updateDonation("donationType", value)}
               options={[
                 { value: "ONE_TIME", label: "Don unique" },
                 { value: "MONTHLY", label: "Mensuel" }
               ]}
             />
-            <Field label="Montant (FCFA)" placeholder="Ex: 5000" />
-            <button type="submit" style={styles.donateBtn}>
-              Continuer
+            <Field label="Montant (FCFA)" type="number" placeholder="Ex: 5000" value={donation.amount} onChange={(value) => updateDonation("amount", value)} />
+            <label style={styles.donationConsent}>
+              <input type="checkbox" checked={donation.consent} onChange={(event) => updateDonation("consent", event.target.checked)} />
+              <span>J’accepte d’être recontacté au sujet de ce don.</span>
+            </label>
+            {donationNotice && (
+              <div style={{ ...styles.donationNotice, ...(donationNotice.type === "success" ? styles.donationSuccess : styles.donationError) }}>
+                {donationNotice.text}
+              </div>
+            )}
+            <button type="submit" style={styles.donateBtn} disabled={donationSubmitting}>
+              {donationSubmitting ? "Envoi…" : "Envoyer mon intention"}
             </button>
           </form>
         </div>
@@ -300,7 +383,7 @@ export default function Fondation() {
                   >
                     <div style={styles.upImgWrap}>
                       {ev.image ? (
-                        <img src={ev.image} alt={ev.title} style={styles.upImg} />
+                        <img src={ev.image} alt={ev.title} style={styles.upImg} loading="lazy" decoding="async" />
                       ) : (
                         <div style={styles.upNoImg}>—</div>
                       )}
@@ -325,7 +408,7 @@ export default function Fondation() {
           <div style={styles.modalCard} className="rgFoundationModal" onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalMedia}>
               {active.image ? (
-                <img src={active.image} alt={active.title} style={styles.modalImg} />
+                <img src={active.image} alt={active.title} style={styles.modalImg} decoding="async" />
               ) : (
                 <div style={styles.modalNoImg}>Aucune image</div>
               )}
@@ -368,26 +451,26 @@ export default function Fondation() {
   );
 }
 
-function Field({ label, type = "text", placeholder }) {
+function Field({ label, type = "text", placeholder, value, onChange }) {
   return (
-    <div style={styles.field}>
-      <div style={styles.label}>{label}</div>
-      <input type={type} placeholder={placeholder} style={styles.input} />
-    </div>
+    <label style={styles.field}>
+      <span style={styles.label}>{label}</span>
+      <input type={type} placeholder={placeholder} value={value} onChange={(event) => onChange(event.target.value)} style={styles.input} required />
+    </label>
   );
 }
-function SelectField({ label, options }) {
+function SelectField({ label, options, value, onChange }) {
   return (
-    <div style={styles.field}>
-      <div style={styles.label}>{label}</div>
-      <select style={styles.input}>
+    <label style={styles.field}>
+      <span style={styles.label}>{label}</span>
+      <select style={styles.input} value={value} onChange={(event) => onChange(event.target.value)}>
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
       </select>
-    </div>
+    </label>
   );
 }
 
@@ -485,6 +568,10 @@ const styles = {
     alignItems: "end",
     minWidth:0,
   },
+  donationConsent: { display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.72)", fontSize: 12.5, gridColumn: "1 / -1" },
+  donationNotice: { padding: "10px 12px", borderRadius: 14, fontSize: 13, lineHeight: 1.5, gridColumn: "1 / -1" },
+  donationSuccess: { color: "rgba(187,247,208,0.95)", border: "1px solid rgba(34,197,94,0.28)", background: "rgba(34,197,94,0.10)" },
+  donationError: { color: "rgba(254,202,202,0.95)", border: "1px solid rgba(239,68,68,0.30)", background: "rgba(239,68,68,0.10)" },
   donateBtn: {
     height: 44,
     padding: "0 16px",
@@ -495,6 +582,8 @@ const styles = {
     cursor: "pointer",
     whiteSpace: "nowrap",
     minWidth:0,
+    gridColumn: "1 / -1",
+    justifySelf: "start",
   },
 
   stage: { maxWidth: 1200, margin: "0 auto", padding: "16px 18px 80px" },
