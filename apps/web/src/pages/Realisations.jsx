@@ -1,500 +1,322 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import SEO from "../components/SEO"; 
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import SEO from "../components/SEO";
 import { apiUrl } from "../lib/api.js";
 
-const CATEGORIES = [
-  { value: "TOUT", label: "Tout" },
-  { value: "WEB", label: "Web" },
-  { value: "MOBILE", label: "Mobile" },
-  { value: "SECURITE", label: "Sécurité" },
-  { value: "DIGITAL", label: "Digital" },
-  { value: "MEDIA", label: "Média" },
-  { value: "AUTRE", label: "Autre" },
+const METHOD = [
+  { number: "01", title: "Comprendre", text: "Clarifier le besoin, les usages et les objectifs du projet." },
+  { number: "02", title: "Concevoir", text: "Transformer l’idée en une expérience simple et cohérente." },
+  { number: "03", title: "Développer", text: "Construire, tester et sécuriser une solution fiable." },
+  { number: "04", title: "Faire évoluer", text: "Déployer, mesurer et améliorer le produit dans le temps." }
 ];
 
-export default function Realisations() {
+function projectMeta(project) {
+  if (project.slug === "gboro") {
+    return {
+      status: "Produit en évolution",
+      type: "Application sportive",
+      sector: "Football ivoirien"
+    };
+  }
 
-  useEffect(() => {
-  document.title = "RonnaGroup | Realisations";
-}, []);
+  if (project.slug === "application-gestion-de-caisse-restaurant") {
+    return {
+      status: "Solution métier",
+      type: "Application web",
+      sector: "Gestion & restauration"
+    };
+  }
 
+  return {
+    status: "Réalisation RONNA GROUP",
+    type: project.category || "Solution digitale",
+    sector: "Conception sur mesure"
+  };
+}
+
+function ProjectShowcase({ project, index }) {
   const navigate = useNavigate();
+  const meta = projectMeta(project);
+  const detailUrl = project.slug ? `/realisations/${project.slug}` : "/realisations";
 
-  const [activeCat, setActiveCat] = useState("TOUT");
+  function openDetail() {
+    if (project.slug) navigate(detailUrl);
+  }
+
+  function onKeyDown(event) {
+    if ((event.key === "Enter" || event.key === " ") && project.slug) {
+      event.preventDefault();
+      openDetail();
+    }
+  }
+
+  return (
+    <article
+      className={`rg-work__project${index % 2 ? " rg-work__project--reverse" : ""}`}
+      onClick={openDetail}
+      onKeyDown={onKeyDown}
+      role="link"
+      tabIndex={0}
+      aria-label={`Découvrir ${project.title}`}
+    >
+      <div className="rg-work__visual">
+        <span className="rg-work__visual-mark" aria-hidden="true">RG</span>
+        {project.coverImage && (
+          <img
+            src={project.coverImage}
+            alt={`Aperçu du projet ${project.title}`}
+            loading={index === 0 ? "eager" : "lazy"}
+            onError={(event) => { event.currentTarget.style.display = "none"; }}
+          />
+        )}
+        <span className="rg-work__status"><i />{meta.status}</span>
+        <span className="rg-work__index">0{index + 1}</span>
+      </div>
+
+      <div className="rg-work__copy">
+        <span className="rg-work__category">{project.category || "Projet digital"}</span>
+        <h2>{project.title}</h2>
+        <p>{project.excerpt}</p>
+
+        <div className="rg-work__facts" aria-label="Informations sur le projet">
+          <div><span>Solution</span><strong>{meta.type}</strong></div>
+          <div><span>Secteur</span><strong>{meta.sector}</strong></div>
+        </div>
+
+        <div className="rg-work__actions" onClick={(event) => event.stopPropagation()}>
+          <Link to={detailUrl}>Découvrir le projet <span>→</span></Link>
+          <Link
+            className="rg-work__action-secondary"
+            to={`/contact?service=RONNA_WEB&subject=${encodeURIComponent(`Projet similaire à ${project.title}`)}`}
+          >
+            Projet similaire
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export default function Realisations() {
   const [items, setItems] = useState([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const limit = 9;
-
-  const query = useMemo(() => {
-    const params = new URLSearchParams();
-    params.set("limit", String(limit));
-    params.set("page", String(page));
-    if (activeCat !== "TOUT") params.set("category", activeCat);
-    return params.toString();
-  }, [activeCat, page]);
+  useEffect(() => { document.title = "Ronna Group | Réalisations"; }, []);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
+    async function loadProjects() {
       setLoading(true);
-      setErr(null);
+      setError("");
       try {
-        const res = await fetch(apiUrl(`/api/projects?${query}`));
-        const json = await res.json().catch(() => ({}));
-        if (!res.ok || json?.ok === false)
-          throw new Error(json?.message || "Erreur chargement projets");
-
-        if (cancelled) return;
-        setItems((prev) =>
-          page === 1 ? json.items || [] : [...prev, ...(json.items || [])],
-        );
-        setTotalPages(json.totalPages || 1);
-      } catch (e) {
-        if (!cancelled) setErr(e?.message || "Erreur réseau");
+        const response = await fetch(apiUrl("/api/projects?limit=20&page=1"));
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data?.ok === false) {
+          throw new Error(data?.message || "Les réalisations sont momentanément indisponibles.");
+        }
+        if (!cancelled) {
+          const projects = [...(data.items || [])].sort((a, b) => {
+            if (a.slug === "gboro") return -1;
+            if (b.slug === "gboro") return 1;
+            return 0;
+          });
+          setItems(projects);
+        }
+      } catch (loadError) {
+        if (!cancelled) setError(loadError?.message || "Une erreur réseau est survenue.");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [query, page]);
-
-  // reset quand change catégorie
-  useEffect(() => {
-    setPage(1);
-    setItems([]);
-  }, [activeCat]);
-
-  const canLoadMore = page < totalPages && !loading;
-  // const goDetail = (p) => {
-  //   if (!p?.slug) return;
-  //   navigate(`/realisations/${p.slug}`);
-  // };
-
-  const stop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+    loadProjects();
+    return () => { cancelled = true; };
+  }, [reloadKey]);
 
   return (
     <>
-     <SEO
-  title="Réalisations"
-  description="Découvrez les applications, plateformes et solutions numériques conçues par RONNA GROUP."
-  canonical="https://www.ronnagroup.net/realisations"
-/>
-    <main style={styles.page}>
-      <header style={styles.hero}>
-        <div style={styles.heroInner}>
-          <div style={styles.kicker}>Nos réalisations</div>
-          <h1 style={styles.h1}>Applications, plateformes & solutions</h1>
-          <p style={styles.lead}>
-            Découvrez nos produits et projets : utilité, contexte, accès et
-            possibilités de démo.
-          </p>
+      <SEO
+        title="Réalisations | Ronna Group"
+        description="Découvrez les applications et solutions métiers conçues par RONNA GROUP pour répondre à des usages réels."
+        canonical="https://www.ronnagroup.net/realisations"
+      />
 
-          <div style={styles.filters}>
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.value}
-                type="button"
-                onClick={() => setActiveCat(c.value)}
-                style={{
-                  ...styles.chip,
-                  ...(activeCat === c.value ? styles.chipActive : null),
-                }}
-              >
-                {c.label}
-              </button>
+      <main className="rg-work">
+        <header className="rg-work__hero">
+          <div className="rg-work__hero-inner">
+            <span className="rg-work__eyebrow">Notre savoir-faire en action</span>
+            <h1>Des solutions pensées<br />pour des usages réels.</h1>
+            <p>
+              De l’idée au produit, RONNA GROUP conçoit des expériences numériques
+              et des outils métiers utiles, fiables et capables d’évoluer.
+            </p>
+            <div className="rg-work__hero-note">
+              <span>{String(items.length || 2).padStart(2, "0")}</span>
+              <p>solutions actuellement<br />présentées</p>
+            </div>
+          </div>
+        </header>
+
+        <section className="rg-work__portfolio" aria-label="Nos réalisations">
+          {loading && (
+            <div className="rg-work__loading" aria-label="Chargement des réalisations">
+              <div /><div />
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="rg-work__state">
+              <span>Contenu indisponible</span>
+              <h2>Les réalisations ne peuvent pas être affichées pour le moment.</h2>
+              <p>{error}</p>
+              <button onClick={() => setReloadKey((key) => key + 1)}>Réessayer</button>
+            </div>
+          )}
+
+          {!loading && !error && items.length === 0 && (
+            <div className="rg-work__state">
+              <span>Portfolio en préparation</span>
+              <h2>De nouvelles réalisations seront bientôt présentées.</h2>
+              <Link to="/contact">Parler de votre projet</Link>
+            </div>
+          )}
+
+          {!loading && !error && items.map((project, index) => (
+            <ProjectShowcase key={project._id} project={project} index={index} />
+          ))}
+        </section>
+
+        <section className="rg-work__method">
+          <div className="rg-work__section-heading">
+            <div>
+              <span className="rg-work__eyebrow">Notre méthode</span>
+              <h2>De l’idée à la mise en production.</h2>
+            </div>
+            <p>Une démarche structurée pour transformer un besoin concret en solution durable.</p>
+          </div>
+          <div className="rg-work__method-grid">
+            {METHOD.map((step) => (
+              <article key={step.number}>
+                <span>{step.number}</span>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </article>
             ))}
           </div>
-        </div>
-      </header>
+        </section>
 
-      <section style={styles.section}>
-        {err && (
-          <div style={styles.stateCard}>
-            <div style={styles.stateTitle}>
-              Impossible de charger les réalisations
-            </div>
-            <div style={styles.stateText}>{err}</div>
+        <section className="rg-work__cta">
+          <div>
+            <span className="rg-work__eyebrow">Votre projet peut être le prochain</span>
+            <h2>Transformons votre besoin en solution concrète.</h2>
           </div>
-        )}
-
-        {!err && loading && items.length === 0 && (
-          <div style={styles.stateCard}>
-            <div style={styles.stateTitle}>Chargement…</div>
-            <div style={styles.stateText}>
-              Récupération des projets en cours.
-            </div>
+          <div className="rg-work__cta-actions">
+            <Link to="/contact">Demander un devis</Link>
+            <a href="https://wa.me/2250151704444" target="_blank" rel="noreferrer">Échanger sur WhatsApp</a>
           </div>
-        )}
-
-        {!err && !loading && items.length === 0 && (
-          <div style={styles.stateCard}>
-            <div style={styles.stateTitle}>Aucune réalisation</div>
-            <div style={styles.stateText}>
-              De nouvelles réalisations seront bientôt présentées ici.
-            </div>
-          </div>
-        )}
-
-        <div className="rg-projGrid" style={styles.grid}>
-          {items.map((p) => (
-            <article
-              key={p._id}
-              className="rg-projCard"
-              style={styles.card}
-              onClick={() => p.slug && navigate(`/realisations/${p.slug}`)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && p.slug)
-                  navigate(`/realisations/${p.slug}`);
-              }}
-            >
-              <div style={styles.media}>
-                {p.coverImage ? (
-                  <img
-                    src={p.coverImage}
-                    alt={p.title}
-                    style={styles.img}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div style={styles.imgFallback} />
-                )}
-                <span style={styles.badge}>{p.category || "PROJET"}</span>
-              </div>
-
-              <div style={styles.body}>
-                <h2 style={styles.title}>{p.title}</h2>
-                {/* CTA row (on stoppe la propagation pour éviter d’ouvrir le détail) */}
-                {p.excerpt && <p style={styles.short}>{p.excerpt}</p>}
-
-                {/* Actions */}
-                <div style={styles.ctaRow} onClick={stop}>
-                  {/* Bouton 1 : Voir le détail (toujours) */}
-                  {/* <button
-                    type="button"
-                    style={{ ...styles.btn, ...styles.btnPrimary }}
-                    onClick={() => goDetail(p)}
-                  >
-                    Voir le détail
-                  </button> */}
-
-                  {/* Bouton 2 : Liens / Nous écrire selon le projet */}
-                  <Ctas project={p} />
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {!err && items.length > 0 && (
-          <div style={styles.moreWrap}>
-            <button
-              type="button"
-              style={{
-                ...styles.moreBtn,
-                ...(canLoadMore ? null : styles.moreBtnDisabled),
-              }}
-              disabled={!canLoadMore}
-              onClick={() => setPage((x) => x + 1)}
-            >
-              {loading ? "Chargement…" : canLoadMore ? "Charger plus" : "Fin"}
-            </button>
-          </div>
-        )}
-
-        <style>{css}</style>
-      </section>
-    </main>
+        </section>
+      </main>
+      <style>{css}</style>
     </>
   );
 }
-
-// function Ctas({ project }) {
-//   const navigate = useNavigate();
-//   const links = project.links || {};
-//   const cta = project.cta || { type: "LINKS" };
-
-//   const btn = (label, onClick, variant = "ghost") => (
-//     <button
-//       type="button"
-//       style={{ ...styles.btn, ...(variant === "primary" ? styles.btnPrimary : styles.btnGhost) }}
-//       onClick={onClick}
-//     >
-//       {label}
-//     </button>
-//   );
-
-//   if (cta.type === "CONTACT") {
-//     const service = cta.service || "RONNA_WEB";
-//     const subject = cta.subject || `Demande d'infos — ${project.title}`;
-//     const url = `/contact?service=${encodeURIComponent(service)}&subject=${encodeURIComponent(subject)}`;
-//     return btn(cta.label || "Nous écrire", () => navigate(url), "primary");
-//   }
-
-//   // LINKS
-//   const actions = [];
-//   if (links.website) actions.push(btn("Visiter", () => window.open(links.website, "_blank", "noopener,noreferrer")));
-//   if (links.android) actions.push(btn("Android", () => window.open(links.android, "_blank", "noopener,noreferrer")));
-//   if (links.ios) actions.push(btn("iOS", () => window.open(links.ios, "_blank", "noopener,noreferrer")));
-
-//   if (actions.length === 0) {
-//     const url = `/contact?service=${encodeURIComponent("RONNA_WEB")}&subject=${encodeURIComponent(
-//       `Demande d’infos — ${project.title}`
-//     )}`;
-//     actions.push(btn("En savoir plus", () => navigate(url), "primary"));
-//   }
-
-//   return <>{actions.slice(0, 3)}</>;
-// }
-
-function Ctas({ project }) {
-  const navigate = useNavigate();
-
-  const btnStyle = (primary) => ({
-    padding: "10px 12px",
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: primary ? "rgba(31,79,216,.95)" : "rgba(255,255,255,0.04)",
-    color: "rgba(255,255,255,0.92)",
-    cursor: "pointer",
-    fontSize: 13
-  });
-
-  const open = (url) => window.open(url, "_blank", "noopener,noreferrer");
-
-  const links = project.links || {}; // { website, android, ios }
-  const hasWebsite = !!links.website;
-  const hasAndroid = !!links.android;
-  const hasIos = !!links.ios;
-
-  // SECOND CTA = priorité : website > android > ios > fallback contact
-  const secondary = hasWebsite
-    ? { label: "Visiter", action: () => open(links.website) }
-    : hasAndroid
-      ? { label: "Android", action: () => open(links.android) }
-      : hasIos
-        ? { label: "iOS", action: () => open(links.ios) }
-        : {
-            label: "Nous écrire",
-            action: () =>
-              navigate(
-                `/contact?service=${encodeURIComponent("RONNA_WEB")}&subject=${encodeURIComponent(
-                  `Demande d’infos — ${project.title}`
-                )}`
-              )
-          };
-
-  return (
-    <>
-      {/* Bouton 1 : Voir le détail (toujours) */}
-      <button
-        type="button"
-        style={btnStyle(true)}
-        onClick={() => project.slug && navigate(`/realisations/${project.slug}`)}
-      >
-        Voir le détail
-      </button>
-
-      {/* Bouton 2 : conditionnel */}
-      <button type="button" style={btnStyle(false)} onClick={secondary.action}>
-        {secondary.label}
-      </button>
-    </>
-  );
-}
-
-const styles = {
-  page: {
-    paddingTop: 110,
-    paddingBottom: 70,
-    background:
-      "linear-gradient(180deg, rgba(3,10,26,0.98) 0%, rgba(5,18,45,0.98) 55%, rgba(3,10,26,0.98) 100%)",
-    minHeight: "100vh",
-  },
-
-  hero: { borderBottom: "1px solid rgba(255,255,255,0.08)" },
-  heroInner: { maxWidth: 1200, margin: "0 auto", padding: "36px 18px 28px" },
-  kicker: {
-    fontSize: 12,
-    letterSpacing: 1.6,
-    textTransform: "uppercase",
-    color: "rgba(255,255,255,0.72)",
-    fontWeight: 800,
-    marginBottom: 10,
-  },
-  h1: {
-    margin: 0,
-    fontSize: 34,
-    fontWeight: 900,
-    letterSpacing: -0.6,
-    color: "rgba(255,255,255,0.95)",
-  },
-  lead: {
-    margin: "12px 0 0",
-    maxWidth: 820,
-    color: "rgba(255,255,255,0.78)",
-    fontSize: 16,
-    lineHeight: 1.7,
-  },
-
-  filters: { marginTop: 16, display: "flex", flexWrap: "wrap", gap: 10 },
-  chip: {
-    padding: "10px 12px",
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.03)",
-    color: "rgba(255,255,255,0.84)",
-    cursor: "pointer",
-    fontSize: 13,
-  },
-  chipActive: {
-    background: "rgba(31,79,216,.95)",
-    border: "1px solid rgba(255,255,255,0.14)",
-    boxShadow: "0 10px 26px rgba(31,79,216,.18)",
-    color: "white",
-  },
-
-  section: { maxWidth: 1200, margin: "0 auto", padding: "22px 18px 0" },
-
-  stateCard: {
-    borderRadius: 22,
-    border: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(255,255,255,0.03)",
-    padding: 16,
-    marginBottom: 16,
-  },
-  stateTitle: {
-    fontWeight: 900,
-    color: "rgba(255,255,255,0.92)",
-    marginBottom: 6,
-  },
-  stateText: { color: "rgba(255,255,255,0.76)", lineHeight: 1.6 },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-    gap: 16,
-  },
-
-  card: {
-    borderRadius: 22,
-    border: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(255,255,255,0.03)",
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-    cursor: "pointer",
-  },
-
-  media: { position: "relative" },
-  img: { width: "100%", height: 190, objectFit: "cover", display: "block" },
-  imgFallback: {
-    width: "100%",
-    height: 190,
-    background: "rgba(255,255,255,0.04)",
-  },
-  badge: {
-    position: "absolute",
-    left: 12,
-    top: 12,
-    padding: "8px 10px",
-    borderRadius: 999,
-    background: "rgba(3,10,26,0.70)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    color: "rgba(255,255,255,0.90)",
-    fontSize: 12,
-  },
-
-  body: { padding: 14, display: "grid", gap: 10 },
-  title: {
-    margin: 0,
-    color: "rgba(255,255,255,0.95)",
-    fontSize: 18,
-    lineHeight: 1.2,
-    fontWeight: 950,
-  },
-  subtitle: { color: "rgba(255,255,255,0.78)", fontSize: 13.5 },
-  short: {
-    margin: 0,
-    color: "rgba(255,255,255,0.74)",
-    fontSize: 14.5,
-    lineHeight: 1.65,
-  },
-
-  tags: { display: "flex", gap: 8, flexWrap: "wrap" },
-  tag: {
-    padding: "6px 10px",
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.03)",
-    color: "rgba(255,255,255,0.84)",
-    fontSize: 12,
-  },
-
-  ctaRow: { display: "flex", gap: 10, flexWrap: "wrap", marginTop: 2 },
-
-  btn: {
-    padding: "10px 12px",
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.12)",
-    cursor: "pointer",
-    fontSize: 13,
-  },
-  btnGhost: {
-    background: "rgba(255,255,255,0.04)",
-    color: "rgba(255,255,255,0.90)",
-  },
-  btnPrimary: {
-    background: "rgba(31,79,216,.95)",
-    border: "1px solid rgba(255,255,255,0.14)",
-    boxShadow: "0 10px 26px rgba(31,79,216,.18)",
-    color: "white",
-  },
-
-  moreWrap: { marginTop: 18, display: "flex", justifyContent: "center" },
-  moreBtn: {
-    padding: "12px 16px",
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.04)",
-    color: "rgba(255,255,255,0.92)",
-    cursor: "pointer",
-  },
-  moreBtnDisabled: { opacity: 0.6, cursor: "not-allowed" },
-};
 
 const css = `
-@media (hover:hover) {
-  .rg-projCard {
-    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
-    will-change: transform;
-  }
-  .rg-projCard:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255,255,255,0.18);
-    background: rgba(255,255,255,0.05);
-    box-shadow: 0 22px 60px rgba(0,0,0,0.28);
-  }
+.rg-work { min-height: 100vh; padding-top: 110px; overflow: hidden; color: #fff; background: linear-gradient(180deg, rgba(3,10,26,.98), rgba(5,18,45,.98) 54%, rgba(3,10,26,.98)); }
+.rg-work a { text-decoration: none; }
+.rg-work__hero { position: relative; border-bottom: 1px solid rgba(255,255,255,.08); }
+.rg-work__hero-inner { position: relative; max-width: 1164px; margin: 0 auto; padding: 64px 28px 58px; }
+.rg-work__eyebrow, .rg-work__state > span { color: #88aaff; font-size: 11px; font-weight: 900; letter-spacing: 1.8px; text-transform: uppercase; }
+.rg-work__hero h1 { max-width: 920px; margin: 12px 0 19px; font-size: clamp(44px, 7vw, 82px); line-height: .98; letter-spacing: -3px; }
+.rg-work__hero > .rg-work__hero-inner > p { max-width: 680px; margin: 0; color: rgba(255,255,255,.7); font-size: 17px; line-height: 1.75; }
+.rg-work__hero-note { position: absolute; right: 28px; bottom: 58px; display: flex; align-items: center; gap: 12px; }
+.rg-work__hero-note > span { color: rgba(126,162,255,.92); font-size: 38px; font-weight: 950; line-height: 1; }
+.rg-work__hero-note p { margin: 0; color: rgba(255,255,255,.48); font-size: 11px; line-height: 1.4; text-transform: uppercase; letter-spacing: .7px; }
+.rg-work__portfolio { max-width: 1164px; min-height: 320px; margin: 0 auto; padding: 42px 28px 80px; display: grid; gap: 28px; }
+.rg-work__project { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(330px, .88fr); min-height: 470px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); border-radius: 28px; background: rgba(255,255,255,.035); cursor: pointer; transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+.rg-work__project--reverse { grid-template-columns: minmax(330px, .88fr) minmax(0, 1.12fr); }
+.rg-work__project--reverse .rg-work__visual { order: 2; }
+.rg-work__project:hover { transform: translateY(-4px); border-color: rgba(125,160,255,.36); box-shadow: 0 28px 80px rgba(0,0,0,.25); }
+.rg-work__project:focus-visible { outline: 2px solid #82a7ff; outline-offset: 4px; }
+.rg-work__visual { position: relative; min-height: 470px; overflow: hidden; background: radial-gradient(circle at 25% 25%, rgba(53,98,218,.78), transparent 40%), linear-gradient(135deg, #0a1e49, #061025); }
+.rg-work__visual::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(3,10,26,.42)); pointer-events: none; }
+.rg-work__visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.rg-work__project:hover .rg-work__visual img { transform: scale(1.025); }
+.rg-work__visual-mark { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.1); font-size: 90px; font-weight: 950; letter-spacing: 10px; }
+.rg-work__status { position: absolute; z-index: 2; top: 18px; left: 18px; padding: 9px 12px; display: flex; align-items: center; gap: 7px; border: 1px solid rgba(255,255,255,.17); border-radius: 999px; background: rgba(3,10,26,.78); color: #fff; font-size: 11px; font-weight: 800; backdrop-filter: blur(10px); }
+.rg-work__status i { width: 6px; height: 6px; border-radius: 50%; background: #63d99b; box-shadow: 0 0 0 4px rgba(99,217,155,.13); }
+.rg-work__index { position: absolute; z-index: 2; right: 20px; bottom: 15px; color: rgba(255,255,255,.78); font-size: 12px; font-weight: 900; letter-spacing: 1.5px; }
+.rg-work__copy { padding: clamp(32px, 5vw, 58px); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+.rg-work__category { color: #88aaff; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; }
+.rg-work__copy h2 { margin: 13px 0 16px; font-size: clamp(30px, 4vw, 48px); line-height: 1.05; letter-spacing: -1.4px; }
+.rg-work__copy > p { display: -webkit-box; overflow: hidden; margin: 0; color: rgba(255,255,255,.68); font-size: 15px; line-height: 1.75; white-space: pre-line; -webkit-box-orient: vertical; -webkit-line-clamp: 6; }
+.rg-work__facts { width: 100%; margin-top: 27px; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; border-top: 1px solid rgba(255,255,255,.09); }
+.rg-work__facts div { display: grid; gap: 5px; }
+.rg-work__facts span { color: rgba(255,255,255,.42); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.rg-work__facts strong { color: rgba(255,255,255,.88); font-size: 13px; }
+.rg-work__actions { margin-top: 28px; display: flex; gap: 9px; flex-wrap: wrap; }
+.rg-work__actions a { min-height: 44px; padding: 0 15px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: #1f4fd8; color: #fff; font-size: 12px; font-weight: 850; }
+.rg-work__actions a span { margin-left: 5px; transition: transform .18s ease; }
+.rg-work__actions a:hover span { transform: translateX(3px); }
+.rg-work__actions .rg-work__action-secondary { background: rgba(255,255,255,.045); }
+.rg-work__loading { display: grid; gap: 28px; }
+.rg-work__loading div { min-height: 470px; border-radius: 28px; background: linear-gradient(100deg, rgba(255,255,255,.03) 20%, rgba(255,255,255,.08) 40%, rgba(255,255,255,.03) 60%); background-size: 200% 100%; animation: rg-work-loading 1.3s infinite; }
+.rg-work__state { padding: 70px 24px; border: 1px solid rgba(255,255,255,.1); border-radius: 26px; background: rgba(255,255,255,.035); text-align: center; }
+.rg-work__state h2 { max-width: 660px; margin: 12px auto; font-size: clamp(25px, 4vw, 38px); }
+.rg-work__state p { margin: 0 auto 22px; color: rgba(255,255,255,.65); }
+.rg-work__state button, .rg-work__state a { padding: 12px 17px; border: 1px solid rgba(255,255,255,.13); border-radius: 999px; background: #1f4fd8; color: #fff; cursor: pointer; font: inherit; font-weight: 800; }
+.rg-work__method { max-width: 1164px; margin: 0 auto; padding: 0 28px 80px; }
+.rg-work__section-heading { margin-bottom: 28px; display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; }
+.rg-work__section-heading h2 { margin: 9px 0 0; font-size: clamp(29px, 4vw, 44px); letter-spacing: -1.3px; }
+.rg-work__section-heading > p { max-width: 430px; margin: 0; color: rgba(255,255,255,.6); line-height: 1.65; }
+.rg-work__method-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255,255,255,.11); }
+.rg-work__method-grid article { position: relative; padding: 25px 24px 12px 0; }
+.rg-work__method-grid article:not(:last-child) { border-right: 1px solid rgba(255,255,255,.09); margin-right: 24px; }
+.rg-work__method-grid article > span { color: #7399f8; font-size: 11px; font-weight: 900; }
+.rg-work__method-grid h3 { margin: 30px 0 9px; font-size: 20px; }
+.rg-work__method-grid p { margin: 0; color: rgba(255,255,255,.58); font-size: 13.5px; line-height: 1.65; }
+.rg-work__cta { max-width: 1108px; margin: 0 auto 74px; padding: 35px 32px; display: flex; align-items: center; justify-content: space-between; gap: 30px; border: 1px solid rgba(108,145,239,.28); border-radius: 26px; background: linear-gradient(120deg, rgba(31,79,216,.22), rgba(255,255,255,.035)); }
+.rg-work__cta h2 { max-width: 650px; margin: 9px 0 0; font-size: clamp(24px, 3.4vw, 36px); line-height: 1.12; }
+.rg-work__cta-actions { display: flex; gap: 9px; flex-shrink: 0; }
+.rg-work__cta-actions a { padding: 13px 15px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; background: #1f4fd8; color: #fff; font-size: 12px; font-weight: 850; }
+.rg-work__cta-actions a:last-child { background: rgba(255,255,255,.045); }
+@keyframes rg-work-loading { to { background-position-x: -200%; } }
+@media (max-width: 920px) {
+  .rg-work__hero-note { position: static; margin-top: 30px; }
+  .rg-work__project, .rg-work__project--reverse { grid-template-columns: 1fr; }
+  .rg-work__project--reverse .rg-work__visual { order: 0; }
+  .rg-work__visual { min-height: 410px; }
+  .rg-work__method-grid { grid-template-columns: 1fr 1fr; }
+  .rg-work__method-grid article:nth-child(2) { border-right: 0; margin-right: 0; }
+  .rg-work__cta { margin-inline: 28px; align-items: flex-start; flex-direction: column; }
 }
-
-@media (max-width: 1024px) {
-  .rg-projGrid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+@media (max-width: 650px) {
+  .rg-work { padding-top: 88px; }
+  .rg-work__hero-inner { padding: 42px 18px 38px; }
+  .rg-work__hero h1 { letter-spacing: -2px; }
+  .rg-work__hero > .rg-work__hero-inner > p { font-size: 15px; }
+  .rg-work__portfolio { padding: 24px 18px 58px; gap: 20px; }
+  .rg-work__project { min-height: 0; border-radius: 23px; }
+  .rg-work__visual { min-height: 270px; }
+  .rg-work__copy { padding: 27px 20px 30px; }
+  .rg-work__copy > p { font-size: 14px; -webkit-line-clamp: 5; }
+  .rg-work__facts { gap: 10px; }
+  .rg-work__facts strong { font-size: 12px; }
+  .rg-work__actions { width: 100%; }
+  .rg-work__actions a { flex: 1; padding-inline: 10px; white-space: nowrap; }
+  .rg-work__method { padding: 0 18px 58px; }
+  .rg-work__section-heading { align-items: flex-start; flex-direction: column; }
+  .rg-work__method-grid { grid-template-columns: 1fr; }
+  .rg-work__method-grid article, .rg-work__method-grid article:not(:last-child) { margin: 0; padding: 22px 0; border-right: 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .rg-work__method-grid h3 { margin-top: 18px; }
+  .rg-work__cta { margin: 0 18px 54px; padding: 27px 20px; }
+  .rg-work__cta-actions { width: 100%; flex-direction: column; }
+  .rg-work__cta-actions a { text-align: center; }
 }
-@media (max-width: 700px) {
-  .rg-projGrid { grid-template-columns: 1fr !important; }
+@media (max-width: 380px) {
+  .rg-work__actions { flex-direction: column; }
 }
 `;
