@@ -5,6 +5,7 @@ import Navbar from "../components/layout/Navbar.jsx";
 import MentionsLegales from "../pages/MentionsLegales.jsx"
 import ScrollToTop from "../components/utils/ScrollToTop.jsx";
 import { Helmet } from "react-helmet-async";
+import DataVortexBackground from "../components/background/DataVortexBackground.jsx";
 
 
 // function renderRoutes(list) {
@@ -36,7 +37,7 @@ export default function App() {
   const { pathname } = useLocation();
   const isAdmin = pathname.startsWith("/admin");
   return (
-    <>
+    <div className={isAdmin ? "rgAdminApp" : "rgPublicShell"}>
     <Helmet>
         <title>Ronna Group</title>
         <meta
@@ -44,6 +45,8 @@ export default function App() {
           content="Ronna Group – Groupe d’investissement et actions solidaires en Côte d’Ivoire."
         />
       </Helmet>
+    {!isAdmin && <DataVortexBackground />}
+    <div className={isAdmin ? undefined : "rgPublicContent"}>
     {!isAdmin && <Navbar />}
       {/* <Navbar /> */}
       <ScrollToTop />
@@ -52,6 +55,7 @@ export default function App() {
         {renderRoutes(routes)}
       </Routes>
       {!isAdmin && <Footer />}
-    </>
+    </div>
+    </div>
   );
 }

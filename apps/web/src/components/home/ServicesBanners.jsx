@@ -58,7 +58,7 @@ const styles = {
   section: {
     padding: "54px 0",
     borderBottom: "1px solid rgba(255,255,255,0.08)",
-    background: "linear-gradient(180deg, rgba(3,10,26,0.92), rgba(3,10,26,1))"
+    background: "linear-gradient(180deg, rgba(3,10,26,0.68), rgba(3,10,26,0.78))"
   },
   container: { maxWidth: 1200, margin: "0 auto", padding: "0 18px" },
   head: { maxWidth: 760, margin: "0 auto 18px", textAlign: "center" },
