@@ -29,22 +29,22 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-  await db.collection("users").updateOne(
-    { email },
-    {
-      $set: {
-        passwordHash,
-        role: "ADMIN",
-        isActive: true,
-        updatedAt: new Date(),
-      },
-      $setOnInsert: {
-        createdAt: new Date(),
-        lastLoginAt: null,
-      },
+  const update = {
+    $set: {
+      passwordHash,
+      role: "ADMIN",
+      isActive: true,
+      updatedAt: new Date(),
     },
-    { upsert: true }
-  );
+    $setOnInsert: {
+      createdAt: new Date(),
+      lastLoginAt: null,
+      tokenVersion: 0,
+    },
+  };
+  if (exists && reset) update.$inc = { tokenVersion: 1 };
+
+  await db.collection("users").updateOne({ email }, update, { upsert: true });
 
   console.log(exists ? "✅ Mot de passe admin réinitialisé:" : "✅ Admin créé:", email);
   if (generatePassword) console.log(`TEMP_ADMIN_PASSWORD=${password}`);

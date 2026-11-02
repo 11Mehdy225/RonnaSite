@@ -47,13 +47,21 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { ObjectId } from "mongodb";
 import { getDb } from "../config/db.js";
+import { requireAdmin } from "../middleware/auth.js";
+import { requireAdminCsrf } from "../middleware/adminCsrf.js";
 
 const router = express.Router();
 
 const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
+});
+
+const ChangePasswordSchema = z.object({
+  currentPassword: z.string().min(6).max(128),
+  newPassword: z.string().min(12).max(128),
 });
 
 function getCookieOptions() {
@@ -91,7 +99,7 @@ router.post("/admin/auth/login", async (req, res) => {
     );
 
     const token = jwt.sign(
-      { sub: String(user._id), role: user.role, email: user.email },
+      { sub: String(user._id), role: user.role, email: user.email, tokenVersion: user.tokenVersion || 0 },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -111,15 +119,43 @@ router.post("/admin/auth/logout", (req, res) => {
   return res.json({ ok: true });
 });
 
-router.get("/admin/auth/me", async (req, res) => {
-  try {
-    const token = req.cookies?.[COOKIE_NAME];
-    if (!token) return res.status(401).json({ ok: false, message: "Unauthorized" });
+router.get("/admin/auth/me", requireAdmin, (req, res) => {
+  return res.json({ ok: true, user: { sub: req.user.sub, email: req.user.email, role: req.user.role } });
+});
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    return res.json({ ok: true, user: { sub: payload.sub, email: payload.email, role: payload.role } });
-  } catch {
-    return res.status(401).json({ ok: false, message: "Unauthorized" });
+router.post("/admin/auth/change-password", requireAdmin, requireAdminCsrf, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = ChangePasswordSchema.parse(req.body);
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ ok: false, message: "Le nouveau mot de passe doit être différent." });
+    }
+
+    const db = getDb();
+    const user = await db.collection("users").findOne({ _id: new ObjectId(req.user.sub), isActive: true });
+    if (!user) return res.status(404).json({ ok: false, message: "Compte introuvable." });
+
+    const validCurrentPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!validCurrentPassword) {
+      return res.status(401).json({ ok: false, message: "Mot de passe actuel incorrect." });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await db.collection("users").updateOne(
+      { _id: user._id },
+      {
+        $set: { passwordHash, passwordChangedAt: new Date(), updatedAt: new Date() },
+        $inc: { tokenVersion: 1 },
+      }
+    );
+
+    res.clearCookie(COOKIE_NAME, { path: "/" });
+    return res.json({ ok: true, message: "Mot de passe modifié. Reconnexion requise." });
+  } catch (error) {
+    if (error?.name === "ZodError") {
+      return res.status(400).json({ ok: false, message: "Le nouveau mot de passe doit contenir au moins 12 caractères." });
+    }
+    console.error("POST /api/admin/auth/change-password error:", error);
+    return res.status(500).json({ ok: false, message: "Erreur serveur" });
   }
 });
 

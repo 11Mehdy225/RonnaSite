@@ -10,6 +10,7 @@ const NAV = [
   { to: "/admin/news", label: "Actualités", group: "Contenu" },
   { to: "/admin/projects", label: "Réalisations", group: "Contenu" },
   { to: "/admin/foundation", label: "Fondation", group: "Contenu" },
+  { to: "/admin/settings", label: "Sécurité", group: "Général" },
 ];
 
 export default function AdminLayout() {

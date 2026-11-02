@@ -19,6 +19,7 @@ import AdminFoundation from "../pages/admin/AdminFoundation.jsx";
 import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
 import AdminProjectsForm from "../pages/admin/AdminProjectsForm.jsx";
 import AdminFoundationForm from "../pages/admin/AdminFoundationForm.jsx";
+import AdminSettings from "../pages/admin/AdminSettings.jsx";
 
 
 
@@ -45,6 +46,7 @@ export const routes = [
       { path: "foundation", element: <AdminFoundation /> },
       { path: "foundation/new", element: <AdminFoundationForm mode="create" /> },
       { path: "foundation/:id/edit", element: <AdminFoundationForm mode="edit" /> },
+      { path: "settings", element: <AdminSettings /> },
     ]
   },
 
