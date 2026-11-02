@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import s1 from "../assets/brands/services/ronnastudio.jpg";
 import s2 from "../assets/brands/services/web.PNG";
 import s3 from "../assets/brands/services/tv.PNG";
@@ -8,436 +7,143 @@ import s5 from "../assets/brands/services/audit.PNG";
 import s6 from "../assets/brands/services/sec.PNG";
 import s7 from "../assets/brands/services/digital.PNG";
 import s8 from "../assets/brands/services/cons-optimized.jpg";
-import SEO from "../components/SEO"; 
+import SEO from "../components/SEO.jsx";
 
-function ServiceCard({ item, index, onActive, isActive }) {
-  const ref = useRef(null);
-  const reverse = index % 2 === 1;
+const SERVICES = [
+  {
+    id: "ronna-digital", code: "RONNA_DIGITAL", category: "Communication numérique", title: "Ronna Digital", image: s1,
+    promise: "Construire une présence numérique cohérente et pilotable.",
+    description: "Nous structurons votre communication, vos contenus et vos canaux pour rendre votre organisation plus visible et plus lisible.",
+    bullets: ["Diagnostic de présence", "Stratégie éditoriale et contenus", "Accompagnement et pilotage"],
+    idealFor: "Organisations qui veulent professionnaliser leur communication numérique.", cta: "Parler de votre présence digitale",
+  },
+  {
+    id: "ronna-web", code: "RONNA_WEB", category: "Sites & plateformes", title: "Ronna Web", image: s2,
+    promise: "Transformer votre présence en ligne en outil de confiance et de conversion.",
+    description: "Nous concevons des sites institutionnels et des plateformes rapides, accessibles et adaptés aux usages mobiles.",
+    bullets: ["Cadrage et architecture des contenus", "Conception et développement", "SEO technique et mise en ligne"],
+    idealFor: "Entreprises, associations et institutions ayant besoin d’un site professionnel.", cta: "Construire votre site",
+  },
+  {
+    id: "ronna-tv", code: "RONNA_TV", category: "Média & podcast", title: "Ronna TV", image: s3,
+    promise: "Donner une forme claire et professionnelle à vos prises de parole.",
+    description: "Nous accompagnons la création de capsules, podcasts et formats médias adaptés à vos publics et à vos canaux.",
+    bullets: ["Conception de formats", "Production et habillage", "Salon podcast et diffusion multicanale"],
+    idealFor: "Marques et organisations qui souhaitent produire des contenus réguliers.", cta: "Préparer votre production média",
+  },
+  {
+    id: "ronna-developpement", code: "RONNA_DEVELOPPEMENT", category: "Solutions métier", title: "Ronna Développement", image: s4,
+    promise: "Concevoir un produit numérique adapté à vos opérations.",
+    description: "Applications web et mobiles, API et outils internes développés à partir des besoins réels de vos équipes.",
+    bullets: ["Cadrage fonctionnel", "Développement web, mobile et API", "Tests, déploiement et accompagnement"],
+    idealFor: "Structures qui veulent digitaliser un processus ou lancer un produit.", cta: "Cadrer votre application",
+  },
+  {
+    id: "ronna-audit", code: "RONNA_AUDIT", category: "Diagnostic", title: "Ronna Audit", image: s5,
+    promise: "Comprendre l’existant avant d’investir dans les améliorations.",
+    description: "Nous analysons les outils, pratiques et risques afin de proposer des priorités compréhensibles et réalisables.",
+    bullets: ["Collecte et analyse", "Constats et risques", "Recommandations et plan d’actions"],
+    idealFor: "Organisations qui ont besoin d’une vision indépendante de leur situation.", cta: "Demander un diagnostic",
+  },
+  {
+    id: "ronna-securite", code: "RONNA_SECURITE", category: "Prévention", title: "Ronna Sécurité", image: s6,
+    promise: "Réduire les risques par des mesures adaptées à votre contexte.",
+    description: "Nous renforçons les bonnes pratiques, la protection des accès et la sensibilisation des équipes.",
+    bullets: ["Évaluation des pratiques", "Prévention et durcissement", "Sensibilisation des utilisateurs"],
+    idealFor: "Équipes qui manipulent des données et des outils numériques au quotidien.", cta: "Renforcer votre protection",
+  },
+  {
+    id: "ronna-formation", code: "RONNA_FORMATION", category: "Compétences", title: "Ronna Formation", image: s7,
+    promise: "Faire progresser les équipes avec une formation directement applicable.",
+    description: "Des parcours ciblés, des ateliers et du coaching construits autour des outils et méthodes réellement utilisés.",
+    bullets: ["Analyse du besoin", "Ateliers et formations ciblées", "Coaching et supports pratiques"],
+    idealFor: "Organisations qui souhaitent structurer une montée en compétence.", cta: "Construire une formation",
+  },
+  {
+    id: "ronna-conseil-management", code: "RONNA_CONSEIL_MANAGEMENT", category: "Organisation & pilotage", title: "Ronna Conseil & Management", image: s8,
+    promise: "Transformer une intention en feuille de route pilotable.",
+    description: "Nous aidons à cadrer les projets, organiser les responsabilités et installer des méthodes de suivi adaptées.",
+    bullets: ["Cadrage et feuille de route", "Organisation et gouvernance", "Pilotage et accompagnement"],
+    idealFor: "Dirigeants et équipes qui doivent structurer ou relancer un projet.", cta: "Structurer votre projet",
+  },
+];
+
+function ServiceCard({ item, index }) {
   const navigate = useNavigate();
-
-useEffect(() => {
-  document.title = "RonnaGroup | Services";
-}, []);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) onActive(index);
-        }
-      },
-      { root: null, threshold: 0.55 }
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
-  }, [index, onActive]);
-
+  const subject = `Demande — ${item.title}`;
   return (
-    
-   <article
-  ref={ref}
-  className={`rg-serviceCard ${isActive ? "is-active" : ""} ${reverse ? "is-reverse" : ""}`}
-  style={styles.card}
->
-
-      <div style={styles.media}>
-        <img src={item.image} alt={item.title} style={styles.image} loading="lazy" decoding="async" />
-      </div>
-
+    <article id={item.id} className={`rg-serviceCard ${index % 2 ? "is-reverse" : ""}`} style={styles.card}>
+      <div style={styles.media} className="rg-service-media"><img src={item.image} alt={item.title} style={styles.image} className="rg-service-image" loading="lazy" decoding="async" /></div>
       <div style={styles.content}>
         <div style={styles.kicker}>{item.category}</div>
         <h2 style={styles.title}>{item.title}</h2>
+        <p style={styles.promise}>{item.promise}</p>
         <p style={styles.desc}>{item.description}</p>
-
-        {item.bullets?.length ? (
-          <ul style={styles.bullets}>
-            {item.bullets.map((b) => (
-              <li key={b} style={styles.bulletItem}>
-                {b}
-              </li>
-            ))}
-          </ul>
-        ) : null}
-
-        {item.cta ? (
-          <div style={styles.ctaRow}>
-  <button
-    type="button"
-    style={styles.ctaBtn}
-    onClick={() => navigate(`/contact?service=${encodeURIComponent(item.code)}`)}
-  >
-    Lancer une demande
-  </button>
-</div>
-
-        ) : null}
+        <div style={styles.deliverables}>
+          <strong style={styles.smallTitle}>Ce que nous pouvons prendre en charge</strong>
+          <ul style={styles.bullets}>{item.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>
+        </div>
+        <p style={styles.ideal}><strong>Idéal pour :</strong> {item.idealFor}</p>
+        <button type="button" style={styles.ctaBtn} onClick={() => navigate(`/contact?service=${item.code}&subject=${encodeURIComponent(subject)}`)}>{item.cta} →</button>
       </div>
     </article>
   );
 }
 
 export default function Services() {
-  const items = useMemo(
-    () => [
-      {
-        code: "RONNA_STUDIO",
-        category: "Digital",
-        title: "Ronna Digital",
-        image: s1,
-        description:
-          "Stratégie digitale, présence en ligne, et accompagnement des organisations dans leur transformation numérique.",
-        bullets: ["Branding & contenu", "Stratégie de communication", "Accompagnement et pilotage"],
-        cta: "Discutons de votre présence digitale",
-      },
-      {
-        code: "RONNA_WEB",
-        category: "Web",
-        title: "Ronna Web",
-        image: s2,
-        description:
-          "Sites vitrines corporate, plateformes web, interfaces modernes et performantes, pensées pour la conversion et la confiance.",
-        bullets: ["Sites institutionnels", "Portails & plateformes", "SEO technique & performance"],
-        cta: "Construire un site professionnel",
-      },
-      {
-        code: "RONNA_TV",
-        category: "Média",
-        title: "Ronna TV",
-        image: s3,
-        description:
-          "Production et diffusion de contenus, formats vidéo, capsules et dispositifs médias au service de la visibilité,podcast.",
-        bullets: ["Capsules & formats", "Habillage & identité","location de notre salon podcast", "Diffusion multi-plateformes"],
-        cta: "Créer une stratégie média",
-      },
-      {
-        code: "RONNA_DEV",
-        category: "Développement",
-        title: "Ronna Développement",
-        image: s4,
-        description:
-          "Applications web & mobiles, APIs, solutions sur mesure, avec une approche orientée fiabilité, évolutivité et sécurité.",
-        bullets: ["Web & Mobile", "API & intégrations", "Architecture & qualité"],
-        cta: "Lancer votre produit",
-      },
-      {
-        code: "RONNA_AUDIT",
-        category: "Audit",
-        title: "Ronna Audit",
-        image: s5,
-        description:
-          "Analyse de l’existant, diagnostic, recommandations, et plan d’amélioration pour une meilleure maîtrise des risques.",
-        bullets: ["Diagnostic & analyse", "Recommandations", "Plan d’actions"],
-        cta: "Évaluer l’existant",
-      },
-      {
-        code: "RONNA_SECURITY",
-        category: "Sécurité",
-        title: "Ronna Sécurité",
-        image: s6,
-        description:
-          "Bonnes pratiques, hygiène numérique, accompagnement et mesures de protection adaptées au contexte de l’organisation.",
-        bullets: ["Bonnes pratiques", "Durcissement & prévention", "Sensibilisation","Sécurité informatique"],
-        cta: "Renforcer la sécurité",
-      },
-      {
-        code: "RONNA_TRAINING",
-        category: "Formation",
-        title: "Ronna Formation",
-        image: s7,
-        description:
-          "Montée en compétence des équipes, formations structurées, accompagnement et coaching sur les outils et méthodes,Developpement equipe.",
-        bullets: ["Formations ciblées", "Coaching", "Approche pragmatique"],
-        cta: "Former et structurer",
-      },
-      {
-        code: "RONNA_CONSULTING",
-        category: "Conseil & Management",
-        title: "Ronna Conseil & Management",
-        image: s8,
-        description:
-          "Cadrage, pilotage, organisation, méthodes agiles, et accompagnement à la performance opérationnelle.",
-        bullets: ["Cadrage & roadmap", "Méthodes agiles", "Pilotage & gouvernance"],
-        cta: "Structurer votre projet",
-      },
-    ],
-    []
-  );
-
-  const [activeIndex, setActiveIndex] = useState(0);
-
   return (
     <>
-      <SEO
-  title="Services"
-  description="Nos services , projets ."
-  canonical="https://www.ronnagroup.net/services"
-/>
-    <main style={styles.page}>
-      <header style={styles.hero}>
-        <div style={styles.heroInner}>
-          <div style={styles.heroKicker}>Nos Services</div>
-          <h1 style={styles.heroTitle}>Des pôles spécialisés, une vision unifiée</h1>
-          <p style={styles.heroText}>
-            Ronna Group rassemble des expertises complémentaires pour accompagner les organisations, de la stratégie à
-            l’exécution, avec un standard de qualité et une exigence de résultat.
-          </p>
-        </div>
-      </header>
+      <SEO title="Services" description="Découvrez les services numériques, médias, conseil, formation et sécurité proposés par RONNA GROUP." canonical="https://www.ronnagroup.net/services" />
+      <main style={styles.page}>
+        <header style={styles.hero}>
+          <div style={styles.heroInner}>
+            <div style={styles.heroKicker}>Nos services</div>
+            <h1 style={styles.heroTitle}>Une expertise adaptée à chaque étape de votre projet</h1>
+            <p style={styles.heroText}>Du diagnostic à la réalisation, RONNA GROUP rassemble des compétences complémentaires pour vous donner un interlocuteur clair et un accompagnement structuré.</p>
+            <div style={styles.principles}>
+              <span>Cadrage clair</span><span>Exécution par étapes</span><span>Suivi après livraison</span>
+            </div>
+          </div>
+        </header>
 
-      <section style={styles.section}>
-        <div style={styles.list}>
-          {items.map((item, idx) => (
-            <ServiceCard
-              key={item.title}
-              item={item}
-              index={idx}
-              onActive={setActiveIndex}
-              isActive={idx === activeIndex}
-            />
-          ))}
-        </div>
-      </section>
+        <nav aria-label="Accès rapide aux services" style={styles.quickNav}>
+          {SERVICES.map((item) => <a key={item.id} href={`#${item.id}`} style={styles.quickLink}>{item.title.replace("Ronna ", "")}</a>)}
+        </nav>
 
-      {/* CSS local (pas besoin de tailwind) */}
-      <style>{css}</style>
-    </main>
+        <section style={styles.section}>
+          <div style={styles.list}>{SERVICES.map((item, index) => <ServiceCard key={item.id} item={item} index={index} />)}</div>
+        </section>
+
+        <section style={styles.finalCta}>
+          <div><div style={styles.heroKicker}>Vous hésitez entre plusieurs services ?</div><h2 style={styles.finalTitle}>Décrivez simplement votre besoin</h2><p style={styles.heroText}>Nous vous aiderons à identifier le bon point de départ et à cadrer la suite.</p></div>
+          <Link to="/contact" style={styles.finalLink}>Parler à l’équipe →</Link>
+        </section>
+      </main>
     </>
   );
 }
 
 const styles = {
-  page: {
-    paddingTop: 110,
-    paddingBottom: 80,
-    background: "linear-gradient(180deg, rgba(3,10,26,0.98) 0%, rgba(5,18,45,0.98) 55%, rgba(3,10,26,0.98) 100%)",
-    minHeight: "100vh",
-  },
-
-  hero: {
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
-  },
-  heroInner: {
-    maxWidth: 1200,
-    margin: "0 auto",
-    padding: "36px 18px 28px",
-  },
-  heroKicker: {
-    fontSize: 12,
-    letterSpacing: 1.6,
-    textTransform: "uppercase",
-    color: "rgba(255,255,255,0.72)",
-    fontWeight: 800,
-    marginBottom: 10,
-  },
-  heroTitle: {
-    margin: 0,
-    fontSize: 34,
-    fontWeight: 900,
-    letterSpacing: -0.6,
-    color: "rgba(255,255,255,0.95)",
-    lineHeight: 1.1,
-  },
-  heroText: {
-    margin: "12px 0 0",
-    maxWidth: 820,
-    color: "rgba(255,255,255,0.78)",
-    fontSize: 16,
-    lineHeight: 1.7,
-  },
-
-  section: {
-    maxWidth: 1200,
-    margin: "0 auto",
-    padding: "26px 18px 0",
-  },
-  list: {
-    display: "grid",
-    gap: 18,
-  },
-
-  card: {
-    display: "grid",
-    gridTemplateColumns: "1.05fr 1fr",
-    gap: 18,
-    alignItems: "start",
-    borderRadius: 26,
-    border: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(255,255,255,0.03)",
-    overflow: "hidden",
-  },
-//   cardReverse: {
-//     gridTemplateColumns: "1fr 1.05fr",
-//   },
-
-  media: { position: "relative" },
-  image: {
-    width: "100%",
-    height: "100%",
-    minHeight: 280,
-    objectFit: "cover",
-    display: "block",
-  },
-
-  content: {
-    padding: 18,
-    display: "flex",
-    flexDirection: "column",
-     justifyContent: "flex-start",
-  },
-  kicker: {
-    fontSize: 12,
-    letterSpacing: 1.6,
-    textTransform: "uppercase",
-    color: "rgba(255,255,255,0.70)",
-    fontWeight: 800,
-    marginBottom: 8,
-  },
-  title: {
-    margin: 0,
-    fontSize: 24,
-    fontWeight: 900,
-    letterSpacing: -0.3,
-    color: "rgba(255,255,255,0.95)",
-    lineHeight: 1.15,
-  },
-  desc: {
-    margin: "10px 0 0",
-    color: "rgba(255,255,255,0.80)",
-    fontSize: 15.5,
-    lineHeight: 1.7,
-  },
-  bullets: {
-    margin: "12px 0 0",
-    paddingLeft: 18,
-    color: "rgba(255,255,255,0.78)",
-    lineHeight: 1.6,
-  },
-  bulletItem: { marginBottom: 6 },
-
-  ctaRow: { marginTop: 12 },
-  ctaHint: {
-    display: "inline-block",
-    padding: "10px 12px",
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.10)",
-    background: "rgba(31,79,216,.18)",
-    color: "rgba(255,255,255,0.92)",
-    fontSize: 13,
-    whiteSpace: "nowrap",
-  },
-  ctaBtn: {
-  padding: "10px 14px",
-  borderRadius: 999,
-  border: "1px solid rgba(255,255,255,0.10)",
-  background: "rgba(31,79,216,.95)",
-  color: "white",
-  cursor: "pointer",
-  boxShadow: "0 12px 34px rgba(31,79,216,.20)",
-  fontSize: 13,
-  whiteSpace: "nowrap",
-},
-
+  page: { paddingTop: 92, paddingBottom: 80, minHeight: "100vh" },
+  hero: { borderBottom: "1px solid rgba(255,255,255,.08)" },
+  heroInner: { maxWidth: 1100, margin: "0 auto", padding: "54px 18px 38px", textAlign: "center" },
+  heroKicker: { fontSize: 12, letterSpacing: 1.6, textTransform: "uppercase", color: "rgba(95,183,255,.92)", fontWeight: 900 },
+  heroTitle: { maxWidth: 850, margin: "12px auto 0", fontSize: "clamp(32px,5vw,52px)", lineHeight: 1.08, letterSpacing: -1 },
+  heroText: { maxWidth: 760, margin: "15px auto 0", color: "rgba(255,255,255,.72)", fontSize: 16, lineHeight: 1.75 },
+  principles: { display: "flex", justifyContent: "center", gap: 9, flexWrap: "wrap", marginTop: 22 },
+  quickNav: { maxWidth: 1200, margin: "20px auto 0", padding: "0 18px", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "thin" },
+  quickLink: { flex: "0 0 auto", padding: "9px 12px", borderRadius: 999, border: "1px solid rgba(255,255,255,.12)", background: "rgba(255,255,255,.035)", fontSize: 13 },
+  section: { maxWidth: 1200, margin: "0 auto", padding: "24px 18px 0" }, list: { display: "grid", gap: 18 },
+  card: { scrollMarginTop: 105, display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", borderRadius: 26, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.035)", overflow: "hidden" },
+  media: { minHeight: 390, background: "rgba(255,255,255,.96)", padding: 8 }, image: { width: "100%", height: "100%", objectFit: "contain", display: "block" },
+  content: { padding: "clamp(20px,4vw,38px)", display: "flex", flexDirection: "column", justifyContent: "center" },
+  kicker: { fontSize: 11, letterSpacing: 1.4, textTransform: "uppercase", color: "rgba(95,183,255,.9)", fontWeight: 900 },
+  title: { margin: "8px 0 0", fontSize: 28 }, promise: { margin: "9px 0 0", fontSize: 18, lineHeight: 1.45, fontWeight: 750 },
+  desc: { margin: "10px 0 0", color: "rgba(255,255,255,.72)", lineHeight: 1.7 },
+  deliverables: { marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,.08)" }, smallTitle: { fontSize: 13 },
+  bullets: { margin: "9px 0 0", paddingLeft: 19, color: "rgba(255,255,255,.75)", lineHeight: 1.7 },
+  ideal: { margin: "14px 0 0", color: "rgba(255,255,255,.68)", lineHeight: 1.6, fontSize: 14 },
+  ctaBtn: { alignSelf: "flex-start", marginTop: 18, padding: "11px 15px", borderRadius: 999, border: "1px solid rgba(255,255,255,.12)", background: "#1F4FD8", color: "white", fontWeight: 800, cursor: "pointer" },
+  finalCta: { maxWidth: 1164, margin: "34px auto 0", padding: "clamp(22px,4vw,38px)", borderRadius: 26, border: "1px solid rgba(95,183,255,.2)", background: "linear-gradient(135deg,rgba(31,79,216,.18),rgba(255,255,255,.035))", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 22, flexWrap: "wrap" },
+  finalTitle: { margin: "8px 0 0", fontSize: 28 }, finalLink: { padding: "12px 17px", borderRadius: 999, background: "white", color: "#071127", fontWeight: 900 },
 };
-
-const css = `
-/* Alternance gauche/droite: on inverse visuellement via flex order sur mobile */
-.rg-serviceCard { 
-  transform: scale(1);
-  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease;
-  will-change: transform;
-  grid-auto-flow: row;
-}
-  /* Alternance EXACTE:
-   - normal: photo (col 1) / texte (col 2)
-   - reverse: texte (col 1) / photo (col 2)
-*/
-.rg-serviceCard.is-reverse > div:first-child {
-  grid-column: 2;
-  grid-row: 1;   /* force même ligne */
-}
-
-.rg-serviceCard.is-reverse > div:last-child {
-  grid-column: 1;
-  grid-row: 1;   /*force même ligne */
-}
-
-
-/* Effet “mise en avant” quand la card arrive au centre du viewport */
-.rg-serviceCard.is-active {
-  transform: scale(1.02);
-  border-color: rgba(255,255,255,0.16);
-  background: rgba(255,255,255,0.05);
-  box-shadow: 0 22px 60px rgba(0,0,0,0.28);
-}
-  /* Effet hover (desktop) */
-@media (hover:hover) {
-  .rg-serviceCard:hover {
-    transform: scale(1.03);
-    border-color: rgba(255,255,255,0.20);
-    background: rgba(255,255,255,0.06);
-    box-shadow: 0 24px 70px rgba(0,0,0,0.32);
-  }
-}
-
-/* Mobile: 1 colonne + alternance conservée en “ordre” */
-@media (max-width: 900px) {
-  .rg-serviceCard {
-    grid-template-columns: 1fr !important;
-  }
-  .rg-serviceCard > div:first-child { order: 1; }
-  .rg-serviceCard > div:last-child { order: 2; }
-
-  /* Titre hero */
-  h1 { font-size: 26px !important; }
-}
-
-
-
-
-
-
-
-
-
-//   /* Reveal (entrée au scroll) */
-// .rg-serviceCard {
-//   opacity: 0;
-//   transform: translateY(18px);
-//   transition:
-//     opacity .45s ease,
-//     transform .45s ease,
-//     box-shadow .22s ease,
-//     border-color .22s ease,
-//     background .22s ease;
-// }
-
-// .rg-serviceCard[data-side="left"] {
-//   transform: translateY(18px) translateX(-18px);
-// }
-// .rg-serviceCard[data-side="right"] {
-//   transform: translateY(18px) translateX(18px);
-// }
-
-// /* Quand la card devient active (au centre), on la révèle */
-// .rg-serviceCard.is-active {
-//   opacity: 1;
-//   transform: translateY(0) translateX(0) scale(1.02);
-//   border-color: rgba(255,255,255,0.16);
-//   background: rgba(255,255,255,0.05);
-//   box-shadow: 0 22px 60px rgba(0,0,0,0.28);
-// }
-
-// /* Respecte les utilisateurs qui désactivent les animations */
-// @media (prefers-reduced-motion: reduce) {
-//   .rg-serviceCard {
-//     opacity: 1;
-//     transform: none;
-//     transition: none;
-//   }
-// }
-
-`;

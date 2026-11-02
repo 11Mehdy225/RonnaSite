@@ -345,11 +345,13 @@ const [params] = useSearchParams();
 
 useEffect(() => {
   const s = params.get("service");
-  if (!s) return;
+  const subject = params.get("subject");
+  if (!s && !subject) return;
 
   setData((prev) => ({
     ...prev,
-    service: s
+    ...(s ? { service: s } : null),
+    ...(subject ? { subject } : null),
   }));
 }, [params]);
 
