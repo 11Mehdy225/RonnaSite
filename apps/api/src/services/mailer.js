@@ -116,6 +116,7 @@ const SMTP_PORT = Number(process.env.BREVO_SMTP_PORT || process.env.SMTP_PORT ||
 const SMTP_SECURE = String(process.env.BREVO_SMTP_SECURE || process.env.SMTP_SECURE || "false") === "true";
 const SMTP_USER = process.env.BREVO_SMTP_USER || process.env.SMTP_USER || "apikey";
 const SMTP_PASS = process.env.BREVO_SMTP_KEY || process.env.SMTP_PASS;
+const CONTACT_RECIPIENT = process.env.CONTACT_RECIPIENT || "contact@ronnagroup.net";
 
 console.log("[MAIL] enabled =", MAIL_ENABLED);
 console.log("[MAIL] host =", SMTP_HOST);
@@ -180,7 +181,7 @@ export async function sendContactMail({ to, payload, id }) {
   const t = getTransporter();
   if (!t) return { skipped: true };
 
-  const mailTo = to || process.env.MAIL_TO;
+  const mailTo = to || CONTACT_RECIPIENT;
   const from = process.env.MAIL_FROM || `"RONNA GROUP" <contact@ronna-grp.com>`;
   const replyTo = payload.email;
 
@@ -222,7 +223,7 @@ export async function sendContactAcknowledgement({ payload, id }) {
     to: payload.email,
     subject: "Nous avons bien reçu votre demande | RONNA GROUP",
     html,
-    replyTo: process.env.MAIL_TO || undefined,
+    replyTo: CONTACT_RECIPIENT,
   });
 
   return { sent: true };
@@ -253,7 +254,7 @@ export async function sendQuoteEmailToTeam(payload) {
   const id = payload?._id?.toString?.() || payload?.requestId?.toString?.() || "—";
 
   return sendContactMail({
-    to: process.env.MAIL_TO,
+    to: CONTACT_RECIPIENT,
     payload: mapped,
     id
   });

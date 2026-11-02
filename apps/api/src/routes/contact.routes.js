@@ -145,7 +145,7 @@ router.post("/contact", quoteRateLimit, async (req, res) => {
     try {
       const mailResults = await Promise.allSettled([
         sendContactMail({
-          to: process.env.MAIL_TO,
+          to: process.env.CONTACT_RECIPIENT || "contact@ronnagroup.net",
           payload: { ...doc, _id: id },
           id,
         }),
