@@ -118,7 +118,9 @@ export default function Realisations() {
           throw new Error(data?.message || "Les réalisations sont momentanément indisponibles.");
         }
         if (!cancelled) {
-          const projects = [...(data.items || [])].sort((a, b) => {
+          const projects = [...(data.items || [])]
+            .filter((project) => project.slug !== "application-gestion-de-caisse-restaurant")
+            .sort((a, b) => {
             if (a.slug === "gboro") return -1;
             if (b.slug === "gboro") return 1;
             return 0;
@@ -154,7 +156,7 @@ export default function Realisations() {
               et des outils métiers utiles, fiables et capables d’évoluer.
             </p>
             <div className="rg-work__hero-note">
-              <span>{String(items.length || 2).padStart(2, "0")}</span>
+              <span>{String(items.length || 1).padStart(2, "0")}</span>
               <p>solutions actuellement<br />présentées</p>
             </div>
           </div>
