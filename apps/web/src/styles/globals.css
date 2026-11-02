@@ -167,6 +167,17 @@ html { scroll-behavior: smooth; }
   }
 }
 
+@media (max-width: 1050px) {
+  .rg-services-compact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+@media (max-width: 560px) {
+  .rg-services-compact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; }
+  .rg-compact-service { padding: 12px !important; min-height: 245px !important; }
+  .rg-compact-service h2 { font-size: 15px !important; }
+  .rg-compact-service button { width: 100%; }
+}
+
 @media (max-width: 700px) {
   h1 { font-size: clamp(25px, 8vw, 32px) !important; }
   h2 { line-height: 1.25; }
