@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import vortex from "../../assets/hero/vid.mov";
 
-export default function HeroVortex() {
-  const words = [
-    "Tech & Innovation",
-    "L’Afrique en avant",
-    "Solutions numériques",
-    "Vision • Impact • Performance",
-  ];
+const WORDS = [
+  "Tech & Innovation",
+  "L’Afrique en avant",
+  "Solutions numériques",
+  "Vision • Impact • Performance",
+];
 
+export default function HeroVortex() {
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
 
@@ -16,7 +16,7 @@ export default function HeroVortex() {
     const timer = setInterval(() => {
       setVisible(false);
       setTimeout(() => {
-        setIndex((i) => (i + 1) % words.length);
+        setIndex((i) => (i + 1) % WORDS.length);
         setVisible(true);
       }, 220);
     }, 3800);
@@ -25,7 +25,7 @@ export default function HeroVortex() {
   }, []);
 
   return (
-    <section style={styles.hero}>
+    <section style={styles.hero} className="rg-hero-vortex">
       {/* VIDEO BACKGROUND */}
       <video
         src={vortex}
@@ -50,7 +50,7 @@ export default function HeroVortex() {
               transform: visible ? "translateY(0)" : "translateY(8px)",
             }}
           >
-            {words[index]}
+            {WORDS[index]}
           </span>
         </h1>
         <div style={styles.heroText}>

@@ -1,30 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import p1 from "../assets/groupe/loic1.JPG";
-import p2 from "../assets/groupe/loic2.JPG";
-import p3 from "../assets/groupe/loic3.JPG";
 import badgePmp from "../assets/badges/pmp.png";
 import badgePspo from "../assets/badges/pspo.png";
 
 
 export default function Groupe() {
-  const photos = useMemo(() => [p1, p2, p3], []);
-  const [index, setIndex] = useState(0);
-
  useEffect(() => {
   document.title = "RonnaGroup | Group";
 }, []);
-
-  // Auto-slide toutes les 4s
-  useEffect(() => {
-    if (!photos.length) return;
-    const t = setInterval(() => {
-      setIndex((i) => (i + 1) % photos.length);
-    }, 4000);
-    return () => clearInterval(t);
-  }, [photos.length]);
-
-  const goPrev = () => setIndex((i) => (i - 1 + photos.length) % photos.length);
-  const goNext = () => setIndex((i) => (i + 1) % photos.length);
 
   return (
     <>
@@ -36,40 +19,16 @@ export default function Groupe() {
           <div style={styles.slider} aria-label="Galerie du fondateur">
             <div style={styles.sliderTop}>
               <span style={styles.sliderLabel}>Le Fondateur</span>
-
-              <div style={styles.controls}>
-                <button type="button" onClick={goPrev} style={styles.ctrlBtn} aria-label="Photo précédente">
-                  ‹
-                </button>
-                <button type="button" onClick={goNext} style={styles.ctrlBtn} aria-label="Photo suivante">
-                  ›
-                </button>
-              </div>
             </div>
 
             <div style={styles.photoFrame}>
               <img
-                src={photos[index]}
-                alt={`Photo du fondateur ${index + 1}`}
+                src={p1}
+                alt="KONAN N’DASSENAN Loïc Harold Mehdy"
                 style={styles.photo}
+                className="rg-founder-photo"
                 loading="eager"
               />
-
-              {/* Dots */}
-              <div style={styles.dots} aria-label="Indicateurs de photos">
-                {photos.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setIndex(i)}
-                    style={{
-                      ...styles.dot,
-                      ...(i === index ? styles.dotActive : null),
-                    }}
-                    aria-label={`Aller à la photo ${i + 1}`}
-                  />
-                ))}
-              </div>
             </div>
           </div>
 
@@ -191,19 +150,6 @@ const styles = {
     color: "rgba(255,255,255,0.72)",
     fontWeight: 700,
   },
-  controls: { display: "flex", gap: 8 },
-  ctrlBtn: {
-    width: 36,
-    height: 32,
-    borderRadius: 12,
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.04)",
-    color: "rgba(255,255,255,0.92)",
-    cursor: "pointer",
-    lineHeight: "28px",
-    fontSize: 18,
-  },
-
   photoFrame: { position: "relative" },
   photo: {
     width: "100%",
@@ -211,27 +157,6 @@ const styles = {
     objectFit: "cover",
     display: "block",
   },
-  dots: {
-    position: "absolute",
-    left: 14,
-    right: 14,
-    bottom: 12,
-    display: "flex",
-    gap: 8,
-    justifyContent: "center",
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.45)",
-    background: "rgba(255,255,255,0.12)",
-    cursor: "pointer",
-  },
-  dotActive: {
-    background: "rgba(255,255,255,0.85)",
-  },
-
   // Legend
   legend: {
     borderRadius: 22,

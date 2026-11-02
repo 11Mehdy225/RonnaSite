@@ -170,9 +170,9 @@ export default function Fondation() {
 />
     <main style={styles.page}>
       {/* HERO sticky */}
-      <div style={styles.hero}>
+      <div style={styles.hero} className="rgFoundationHero">
         <div style={styles.heroOverlay} />
-        <p style={styles.quote}>
+        <p style={styles.quote} className="rgFoundationQuote">
           <em>
             “Servir, impacter, relever — bâtir une chaîne de solidarité et d’opportunités.”
           </em>
@@ -182,7 +182,7 @@ export default function Fondation() {
       {/* DON FORM horizontal (après hero) */}
       <section style={styles.donateStrip}>
         <div style={styles.donateStripInner} className="donateStrip">
-          <div style={styles.donateStripLeft}>
+          <div style={styles.donateStripLeft} className="donateStripIntro">
             <div style={styles.donateTitle}>Faire un don</div>
             <div style={styles.donateHint}>
               Votre contribution soutient nos actions. 
@@ -225,7 +225,7 @@ export default function Fondation() {
       <section style={styles.stage}>
         <div className="rgFoundationGrid" style={styles.stageGrid}>
           {/* GAUCHE : Actions (slider) */}
-          <div style={styles.left}>
+          <div style={styles.left} className="rgFoundationLeft">
             {loadingActions && <div style={styles.stateCard}>Chargement des actions…</div>}
 
             {!loadingActions && errorActions && (
@@ -240,7 +240,7 @@ export default function Fondation() {
 
             {current && (
               <div style={styles.slideCard}>
-                <div style={styles.slideMedia}>
+                <div style={styles.slideMedia} className="rgFoundationSlideMedia">
                   {current.image ? (
                     <img src={current.image} alt={current.title} style={styles.slideImg} />
                   ) : (
@@ -280,7 +280,7 @@ export default function Fondation() {
           </div>
 
           {/* DROITE : À venir */}
-          <aside style={styles.right}>
+          <aside style={styles.right} className="rgFoundationRight">
             <div style={styles.upTitle}>Événements à venir</div>
 
             {loadingActions && <div style={styles.upEmpty}>Chargement…</div>}
@@ -322,7 +322,7 @@ export default function Fondation() {
       {/* MODAL */}
       {active && (
         <div style={styles.modalBack} role="dialog" aria-modal="true" onClick={closeModal}>
-          <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+          <div style={styles.modalCard} className="rgFoundationModal" onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalMedia}>
               {active.image ? (
                 <img src={active.image} alt={active.title} style={styles.modalImg} />
@@ -694,10 +694,39 @@ const css = `
 
 @media (max-width: 980px) {
   .rgFoundationGrid { grid-template-columns: 1fr !important; }
+  .rgFoundationHero {
+    position: relative !important;
+    top: auto !important;
+    min-height: 170px !important;
+  }
+  .donateStrip {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+  }
+  .donateStripIntro { text-align: center; }
+  .donateStripForm { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
 
-@media (max-width: 980px) {
-  /* donate strip responsive */
-  .rgFoundationDonateGrid { grid-template-columns: 1fr !important; }
+@media (max-width: 640px) {
+  .rgFoundationHero {
+    min-height: 140px !important;
+    padding: 20px 16px !important;
+  }
+  .rgFoundationQuote {
+    font-size: 16px !important;
+    line-height: 1.55 !important;
+  }
+  .donateStripForm { grid-template-columns: 1fr !important; }
+  .donateStripForm button { width: 100% !important; }
+  .rgFoundationLeft,
+  .rgFoundationRight { padding: 10px !important; border-radius: 18px !important; }
+  .rgFoundationSlideMedia { min-height: 360px !important; }
+  .rgFoundationModal {
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto !important;
+    border-radius: 18px !important;
+  }
 }
 `;

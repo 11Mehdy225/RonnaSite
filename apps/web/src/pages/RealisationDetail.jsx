@@ -61,7 +61,7 @@ export default function RealisationDetail() {
 
             {item.coverImage && (
               <div style={styles.coverWrap}>
-                <img src={item.coverImage} alt={item.title} style={styles.cover} />
+                <img src={item.coverImage} alt={item.title} style={styles.cover} className="rg-detail-cover" />
               </div>
             )}
 
@@ -92,9 +92,9 @@ export default function RealisationDetail() {
 
             {/* galerie */}
             {Array.isArray(item.gallery) && item.gallery.length > 0 && (
-              <div style={styles.galleryGrid}>
+              <div style={styles.galleryGrid} className="rg-detail-gallery">
                 {item.gallery.map((url) => (
-                  <img key={url} src={url} alt="" style={styles.galleryImg} loading="lazy" />
+                  <img key={url} src={url} alt="" style={styles.galleryImg} className="rg-detail-gallery-img" loading="lazy" />
                 ))}
               </div>
             )}

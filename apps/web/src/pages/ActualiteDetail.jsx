@@ -83,7 +83,7 @@ useEffect(() => {
 
             {item.coverImage && (
               <div style={styles.coverWrap}>
-                <img src={item.coverImage} alt={item.title} style={styles.cover} />
+                <img src={item.coverImage} alt={item.title} style={styles.cover} className="rg-detail-cover" />
               </div>
             )}
 

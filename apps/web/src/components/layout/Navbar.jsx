@@ -24,15 +24,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Ferme le menu à chaque changement de page
- useEffect(() => {
-  if (!open) return;
-  const t = setTimeout(() => setOpen(false), 5000);
-  return () => clearTimeout(t);
-}, [location.pathname, open]);
-
-
-
   // Ferme le menu si on repasse en écran large
   useEffect(() => {
     const onResize = () => {
@@ -54,7 +45,7 @@ export default function Navbar() {
       }}
     >
       <div style={styles.inner}>
-        <Link to="/" style={styles.brand} aria-label="Ronna Group - Accueil">
+        <Link to="/" style={styles.brand} aria-label="Ronna Group - Accueil" onClick={() => setOpen(false)}>
           <img src={logo} alt="Ronna Group" style={styles.logoImg} />
           <div style={styles.brandText}>
             <div style={styles.name}>RONNA GROUP</div>
@@ -68,6 +59,7 @@ export default function Navbar() {
             <Link
               key={item.label}
               to={item.to}
+              onClick={() => setOpen(false)}
               style={{
                 ...styles.link,
                 ...(location.pathname === item.to ? styles.linkActive : null)
@@ -77,7 +69,7 @@ export default function Navbar() {
             </Link>
           ))}
 
-          <Link to="/contact" style={styles.cta}>
+          <Link to="/contact" style={styles.cta} onClick={() => setOpen(false)}>
             Demander un devis
           </Link>
         </nav>
@@ -114,6 +106,7 @@ export default function Navbar() {
               <Link
                 key={item.label}
                 to={item.to}
+                onClick={() => setOpen(false)}
                 style={{
                   ...styles.mobileLink,
                   ...(location.pathname === item.to ? styles.mobileLinkActive : null)
@@ -122,7 +115,7 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
-            <Link to="/contact" style={styles.mobileCta}>
+            <Link to="/contact" style={styles.mobileCta} onClick={() => setOpen(false)}>
               Demander un devis
             </Link>
           </div>
