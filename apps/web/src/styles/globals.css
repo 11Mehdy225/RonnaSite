@@ -190,6 +190,17 @@ html { scroll-behavior: smooth; }
 }
 
 @media (max-width: 700px) {
+  .rg-home-audit {
+    align-items: flex-start !important;
+    flex-direction: column;
+    padding: 24px 20px !important;
+  }
+
+  .rg-home-audit > a {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
   h1 { font-size: clamp(25px, 8vw, 32px) !important; }
   h2 { line-height: 1.25; }
   p, li { overflow-wrap: anywhere; }

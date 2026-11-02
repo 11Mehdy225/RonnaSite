@@ -9,6 +9,7 @@ const Actualites = lazy(() => import("../pages/Actualites.jsx"));
 const ActualiteDetail = lazy(() => import("../pages/ActualiteDetail.jsx"));
 const Fondation = lazy(() => import("../pages/Fondation.jsx"));
 const RealisationDetail = lazy(() => import("../pages/RealisationDetail.jsx"));
+const AuditExpress = lazy(() => import("../pages/AuditExpress.jsx"));
 
 const AdminLogin = lazy(() => import("../components/admin/AdminLogin.jsx"));
 const AdminQuotes = lazy(() => import("../components/admin/AdminQuotes.jsx"));
@@ -66,6 +67,7 @@ export const routes = [
   { path: "/actualites/:slug", element: <ActualiteDetail /> },
   { path: "/realisations", element: <Realisations /> },
   { path: "/realisations/:slug", element: <RealisationDetail /> },
+  { path: "/audit-express", element: <AuditExpress /> },
   { path: "/contact", element: <Contact /> },
   { path: "/fondation", element: <Fondation /> }
 ];

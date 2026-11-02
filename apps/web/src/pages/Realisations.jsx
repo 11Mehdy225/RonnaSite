@@ -10,7 +10,19 @@ const METHOD = [
   { number: "04", title: "Faire évoluer", text: "Déployer, mesurer et améliorer le produit dans le temps." }
 ];
 
+const AUDIT_EXPRESS = {
+  _id: "audit-express",
+  title: "Ronna Audit Express",
+  slug: "audit-express",
+  category: "Diagnostic digital",
+  excerpt: "Un outil gratuit qui évalue la maturité numérique d’une entreprise en 10 questions et transforme les réponses en priorités d’action concrètes.",
+  internalUrl: "/audit-express"
+};
+
 function projectMeta(project) {
+  if (project.slug === "audit-express") {
+    return { status: "Outil disponible", type: "Diagnostic interactif", sector: "Entreprises & organisations" };
+  }
   if (project.slug === "gboro") {
     return {
       status: "Produit en évolution",
@@ -37,7 +49,7 @@ function projectMeta(project) {
 function ProjectShowcase({ project, index }) {
   const navigate = useNavigate();
   const meta = projectMeta(project);
-  const detailUrl = project.slug ? `/realisations/${project.slug}` : "/realisations";
+  const detailUrl = project.internalUrl || (project.slug ? `/realisations/${project.slug}` : "/realisations");
 
   function openDetail() {
     if (project.slug) navigate(detailUrl);
@@ -61,6 +73,14 @@ function ProjectShowcase({ project, index }) {
     >
       <div className="rg-work__visual">
         <span className="rg-work__visual-mark" aria-hidden="true">RG</span>
+        {project.slug === "audit-express" && (
+          <div className="rg-work__audit-preview" aria-hidden="true">
+            <span>Diagnostic terminé</span>
+            <strong>78<small>/100</small></strong>
+            <i><b /></i>
+            <p>Maturité numérique structurée</p>
+          </div>
+        )}
         {project.coverImage && (
           <img
             src={project.coverImage}
@@ -125,7 +145,7 @@ export default function Realisations() {
             if (b.slug === "gboro") return 1;
             return 0;
           });
-          setItems(projects);
+          setItems([...projects, AUDIT_EXPRESS]);
         }
       } catch (loadError) {
         if (!cancelled) setError(loadError?.message || "Une erreur réseau est survenue.");
@@ -248,6 +268,8 @@ const css = `
 .rg-work__visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
 .rg-work__project:hover .rg-work__visual img { transform: scale(1.025); }
 .rg-work__visual-mark { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.1); font-size: 90px; font-weight: 950; letter-spacing: 10px; }
+.rg-work__audit-preview { position:absolute;z-index:1;inset:15%;padding:30px;display:flex;flex-direction:column;justify-content:center;border:1px solid rgba(255,255,255,.16);border-radius:24px;background:linear-gradient(145deg,rgba(31,79,216,.72),rgba(5,18,45,.92));box-shadow:0 28px 70px rgba(0,0,0,.28);transform:rotate(-2deg)}
+.rg-work__audit-preview>span{color:rgba(255,255,255,.68);font-size:11px;letter-spacing:1.2px;text-transform:uppercase}.rg-work__audit-preview>strong{margin:14px 0 18px;font-size:72px;line-height:.85}.rg-work__audit-preview small{font-size:15px;color:rgba(255,255,255,.55)}.rg-work__audit-preview i{height:7px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.12)}.rg-work__audit-preview b{display:block;width:78%;height:100%;border-radius:inherit;background:#8bb0ff}.rg-work__audit-preview p{margin:14px 0 0;color:rgba(255,255,255,.75);font-size:13px}
 .rg-work__status { position: absolute; z-index: 2; top: 18px; left: 18px; padding: 9px 12px; display: flex; align-items: center; gap: 7px; border: 1px solid rgba(255,255,255,.17); border-radius: 999px; background: rgba(3,10,26,.78); color: #fff; font-size: 11px; font-weight: 800; backdrop-filter: blur(10px); }
 .rg-work__status i { width: 6px; height: 6px; border-radius: 50%; background: #63d99b; box-shadow: 0 0 0 4px rgba(99,217,155,.13); }
 .rg-work__index { position: absolute; z-index: 2; right: 20px; bottom: 15px; color: rgba(255,255,255,.78); font-size: 12px; font-weight: 900; letter-spacing: 1.5px; }

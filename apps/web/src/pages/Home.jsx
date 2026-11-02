@@ -16,7 +16,13 @@ export default function Home() {
     fetch(apiUrl("/api/projects?limit=3&page=1"))
       .then((response) => response.json())
       .then((json) => {
-        if (!cancelled && Array.isArray(json?.items)) setProjects(json.items.slice(0, 3));
+        if (!cancelled && Array.isArray(json?.items)) {
+          setProjects(
+            json.items
+              .filter((project) => project.slug !== "application-gestion-de-caisse-restaurant")
+              .slice(0, 3)
+          );
+        }
       })
       .catch(() => {});
 
@@ -108,6 +114,19 @@ export default function Home() {
               <Link to="/realisations" style={styles.inlineLink}>Explorer nos réalisations →</Link>
             </div>
           )}
+        </div>
+      </section>
+
+      <section style={styles.auditSection}>
+        <div style={styles.container}>
+          <div className="rg-home-audit" style={styles.auditCard}>
+            <div>
+              <div style={styles.kicker}>Nouvel outil gratuit</div>
+              <h2 style={styles.auditTitle}>Mesurez la maturité numérique de votre entreprise.</h2>
+              <p style={styles.auditText}>10 questions, un score immédiat et trois priorités concrètes pour progresser.</p>
+            </div>
+            <Link to="/audit-express" style={styles.auditButton}>Lancer l’Audit Express →</Link>
+          </div>
         </div>
       </section>
 
@@ -235,4 +254,9 @@ const styles = {
   methodNumber: { color: "rgba(95,183,255,.92)", fontWeight: 900, letterSpacing: ".08em" },
   methodTitle: { margin: "12px 0 6px", fontSize: 18 },
   methodText: { margin: 0, color: "rgba(255,255,255,.7)", lineHeight: 1.65, fontSize: 14 },
+  auditSection: { padding: "6px 0 44px" },
+  auditCard: { padding: "30px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 28, borderRadius: 24, border: "1px solid rgba(112,149,244,.28)", background: "linear-gradient(120deg,rgba(31,79,216,.2),rgba(255,255,255,.035))" },
+  auditTitle: { maxWidth: 680, margin: "7px 0 8px", fontSize: "clamp(23px,3vw,34px)" },
+  auditText: { margin: 0, color: "rgba(255,255,255,.68)", lineHeight: 1.6 },
+  auditButton: { flexShrink: 0, padding: "13px 16px", borderRadius: 999, background: "#1f4fd8", border: "1px solid rgba(255,255,255,.14)", color: "white", fontWeight: 800, textDecoration: "none" },
 };
