@@ -178,6 +178,17 @@ html { scroll-behavior: smooth; }
   .rg-compact-service button { width: 100%; }
 }
 
+@media (max-width: 900px) {
+  .rg-group-hero,
+  .rg-group-story,
+  .rg-group-leadership { grid-template-columns: 1fr !important; }
+  .rg-group-hero { gap: 20px !important; }
+  .rg-group-hero img { height: min(118vw, 560px) !important; }
+  .rg-group-pillars,
+  .rg-group-timeline { grid-template-columns: 1fr !important; }
+  .rg-group-badges { grid-template-columns: 1fr !important; }
+}
+
 @media (max-width: 700px) {
   h1 { font-size: clamp(25px, 8vw, 32px) !important; }
   h2 { line-height: 1.25; }
