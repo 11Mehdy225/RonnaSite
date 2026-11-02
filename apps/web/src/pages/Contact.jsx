@@ -40,6 +40,12 @@ const CONTACT_PREF_OPTIONS = [
   { value: "MEETING", label: "Rendez-vous" }
 ];
 
+const WHATSAPP_NUMBER = "2250151704444";
+
+function optionLabel(options, value) {
+  return options.find((option) => option.value === value)?.label || value || "Non précisé";
+}
+
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
 }
@@ -85,11 +91,13 @@ useEffect(() => {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState(null); // {type:'success'|'error', text:''}
+  const [whatsappUrl, setWhatsappUrl] = useState("");
 
   const setField = (name, value) => {
     setData((d) => ({ ...d, [name]: value }));
     setErrors((e) => ({ ...e, [name]: undefined }));
     setNotice(null);
+    setWhatsappUrl("");
   };
 
   const validate = () => {
@@ -303,10 +311,25 @@ const res = await fetch(apiUrl("/api/contact"), {
       return;
     }
 
+    const reference = json.id || "—";
+    const whatsappMessage = [
+      "Bonjour RONNA GROUP,",
+      "Je souhaite également transmettre ma demande de devis sur WhatsApp.",
+      `Référence : ${reference}`,
+      `Nom : ${data.fullName.trim()}`,
+      `Entreprise : ${data.company.trim()}`,
+      `Service : ${optionLabel(SERVICE_OPTIONS, data.service)}`,
+      `Objet : ${data.subject.trim()}`,
+      `Besoin : ${data.message.trim().slice(0, 700)}`,
+      `Budget : ${optionLabel(BUDGET_OPTIONS, data.budgetRange)}`,
+      `Délai : ${optionLabel(TIMELINE_OPTIONS, data.timeline)}`,
+    ].join("\n");
+
     setNotice({
       type: "success",
-      text: `Demande envoyée. Référence: ${json.id || "—"}`
+      text: `Demande envoyée. Référence: ${reference}`
     });
+    setWhatsappUrl(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`);
     setData(initial);
   } catch (err) {
     console.error(err);
@@ -349,6 +372,16 @@ useEffect(() => {
           {notice && (
             <div style={{ ...styles.notice, ...(notice.type === "success" ? styles.noticeSuccess : styles.noticeError) }}>
               {notice.text}
+              {notice.type === "success" && whatsappUrl && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={styles.whatsappBtn}
+                >
+                  Envoyer aussi sur WhatsApp
+                </a>
+              )}
             </div>
           )}
 
@@ -565,6 +598,17 @@ const styles = {
   },
   noticeSuccess: { background: "rgba(34,197,94,0.10)", color: "rgba(255,255,255,0.92)" },
   noticeError: { background: "rgba(239,68,68,0.10)", color: "rgba(255,255,255,0.92)" },
+  whatsappBtn: {
+    display: "flex",
+    width: "fit-content",
+    marginTop: 12,
+    padding: "11px 15px",
+    borderRadius: 999,
+    background: "#25D366",
+    color: "#04160b",
+    fontWeight: 800,
+    textDecoration: "none",
+  },
 
   hpWrap: { position: "absolute", left: "-9999px", top: "auto", width: 1, height: 1, overflow: "hidden" },
 
