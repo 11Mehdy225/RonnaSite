@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import SEO from "../components/SEO"; 
 import { apiUrl } from "../lib/api.js";
+import { trackEvent } from "../lib/analytics.js";
 
 
 const SERVICE_OPTIONS = [
@@ -330,6 +331,7 @@ const res = await fetch(apiUrl("/api/contact"), {
       text: `Demande envoyée. Référence: ${reference}`
     });
     setWhatsappUrl(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`);
+    trackEvent("quote_submitted", "/contact");
     setData(initial);
   } catch (err) {
     console.error(err);
@@ -357,7 +359,7 @@ useEffect(() => {
     <SEO
   title="Contact"
   description="Contactez Ronna Group pour toute collaboration ou partenariat."
-  canonical="https://ronnagroup.net/contact"
+  canonical="https://www.ronnagroup.net/contact"
 />
     <main style={styles.main}>
       <div style={styles.container}>

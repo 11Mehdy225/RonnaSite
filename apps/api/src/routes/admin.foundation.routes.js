@@ -217,6 +217,7 @@ import { ObjectId } from "mongodb";
 import { requireAdmin } from "../middleware/auth.js";
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
 import { deleteUnreferencedMedia } from "../utils/mediaStorage.js";
+import { recordAdminActivity } from "../utils/adminActivity.js";
 
 const router = express.Router();
 
@@ -341,6 +342,8 @@ router.post("/admin/foundation/actions", requireAdmin, requireAdminCsrf, async (
     const r = await db.collection("foundation_actions").insertOne(doc);
     const item = await db.collection("foundation_actions").findOne({ _id: r.insertedId });
 
+    await recordAdminActivity(req, "CREATE", "foundation", item._id, { title: item.title, published: item.published });
+
     res.status(201).json({ ok: true, item });
   } catch (err) {
     console.error("POST /api/admin/foundation/actions error:", err);
@@ -381,6 +384,7 @@ router.patch("/admin/foundation/actions/:id", requireAdmin, requireAdminCsrf, as
     if (previous.image !== item.image) {
       await deleteUnreferencedMedia(db, [previous.image]);
     }
+    await recordAdminActivity(req, "UPDATE", "foundation", item._id, { title: item.title, published: item.published });
     res.json({ ok: true, item });
   } catch (err) {
     console.error("PATCH /api/admin/foundation/actions/:id error:", err);
@@ -399,6 +403,8 @@ router.delete("/admin/foundation/actions/:id", requireAdmin, requireAdminCsrf, a
     if (!r.deletedCount) return res.status(404).json({ ok: false, message: "Introuvable" });
 
     await deleteUnreferencedMedia(db, [existing.image]);
+
+    await recordAdminActivity(req, "DELETE", "foundation", existing._id, { title: existing.title });
 
     res.json({ ok: true });
   } catch {

@@ -51,6 +51,9 @@ import { ObjectId } from "mongodb";
 import { getDb } from "../config/db.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
+import { recordAdminActivity } from "../utils/adminActivity.js";
+import crypto from "crypto";
+import { sendPasswordResetMail } from "../services/mailer.js";
 
 const router = express.Router();
 
@@ -63,6 +66,8 @@ const ChangePasswordSchema = z.object({
   currentPassword: z.string().min(6).max(128),
   newPassword: z.string().min(12).max(128),
 });
+const ForgotPasswordSchema = z.object({ email: z.string().email() });
+const ResetPasswordSchema = z.object({ token: z.string().min(32).max(256), newPassword: z.string().min(12).max(128) });
 
 function getCookieOptions() {
   const secure = process.env.NODE_ENV === "production" || String(process.env.COOKIE_SECURE || "false") === "true";
@@ -123,6 +128,59 @@ router.get("/admin/auth/me", requireAdmin, (req, res) => {
   return res.json({ ok: true, user: { sub: req.user.sub, email: req.user.email, role: req.user.role } });
 });
 
+router.post("/admin/auth/forgot-password", async (req, res) => {
+  const genericResponse = { ok: true, message: "Si ce compte existe, un email a été envoyé." };
+  try {
+    const { email } = ForgotPasswordSchema.parse(req.body);
+    const db = getDb();
+    const user = await db.collection("users").findOne({ email: email.toLowerCase(), role: "ADMIN", isActive: true });
+    if (!user) return res.json(genericResponse);
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    await db.collection("users").updateOne(
+      { _id: user._id },
+      { $set: { resetPasswordTokenHash: tokenHash, resetPasswordExpiresAt: new Date(Date.now() + 30 * 60 * 1000) } }
+    );
+    const siteUrl = String(process.env.PUBLIC_SITE_URL || "https://www.ronnagroup.net").replace(/\/$/, "");
+    await sendPasswordResetMail({ to: user.email, resetUrl: `${siteUrl}/admin/reset-password?token=${token}` });
+    return res.json(genericResponse);
+  } catch (error) {
+    if (error?.name === "ZodError") return res.status(400).json({ ok: false, message: "Email invalide" });
+    console.error("POST /api/admin/auth/forgot-password error:", error);
+    return res.status(500).json({ ok: false, message: "Service momentanément indisponible" });
+  }
+});
+
+router.post("/admin/auth/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = ResetPasswordSchema.parse(req.body);
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const db = getDb();
+    const user = await db.collection("users").findOne({
+      resetPasswordTokenHash: tokenHash,
+      resetPasswordExpiresAt: { $gt: new Date() },
+      isActive: true,
+    });
+    if (!user) return res.status(400).json({ ok: false, message: "Lien invalide ou expiré." });
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await db.collection("users").updateOne(
+      { _id: user._id },
+      {
+        $set: { passwordHash, passwordChangedAt: new Date(), updatedAt: new Date() },
+        $unset: { resetPasswordTokenHash: "", resetPasswordExpiresAt: "" },
+        $inc: { tokenVersion: 1 },
+      }
+    );
+    return res.json({ ok: true, message: "Mot de passe modifié." });
+  } catch (error) {
+    if (error?.name === "ZodError") return res.status(400).json({ ok: false, message: "Lien ou mot de passe invalide." });
+    console.error("POST /api/admin/auth/reset-password error:", error);
+    return res.status(500).json({ ok: false, message: "Erreur serveur" });
+  }
+});
+
 router.post("/admin/auth/change-password", requireAdmin, requireAdminCsrf, async (req, res) => {
   try {
     const { currentPassword, newPassword } = ChangePasswordSchema.parse(req.body);
@@ -149,6 +207,7 @@ router.post("/admin/auth/change-password", requireAdmin, requireAdminCsrf, async
     );
 
     res.clearCookie(COOKIE_NAME, { path: "/" });
+    await recordAdminActivity(req, "CHANGE_PASSWORD", "user", user._id);
     return res.json({ ok: true, message: "Mot de passe modifié. Reconnexion requise." });
   } catch (error) {
     if (error?.name === "ZodError") {

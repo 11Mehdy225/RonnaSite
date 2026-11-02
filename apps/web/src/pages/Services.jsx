@@ -174,7 +174,7 @@ export default function Services() {
       <SEO
   title="Services"
   description="Nos services , projets ."
-  canonical="https://ronnagroup.net/services"
+  canonical="https://www.ronnagroup.net/services"
 />
     <main style={styles.page}>
       <header style={styles.hero}>

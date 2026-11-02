@@ -6,6 +6,7 @@ import Navbar from "../components/layout/Navbar.jsx";
 import ScrollToTop from "../components/utils/ScrollToTop.jsx";
 import { Helmet } from "react-helmet-async";
 import DataVortexBackground from "../components/background/DataVortexBackground.jsx";
+import AnalyticsTracker from "../components/utils/AnalyticsTracker.jsx";
 
 const MentionsLegales = lazy(() => import("../pages/MentionsLegales.jsx"));
 const NotFound = lazy(() => import("../pages/NotFound.jsx"));
@@ -54,6 +55,7 @@ export default function App() {
     {!isAdmin && <Navbar />}
       {/* <Navbar /> */}
       <ScrollToTop />
+      <AnalyticsTracker />
       <Suspense fallback={<div className="rg-page-loader" role="status">Chargement…</div>}>
         <Routes>
           <Route path="/mentions-legales" element={<MentionsLegales />} />

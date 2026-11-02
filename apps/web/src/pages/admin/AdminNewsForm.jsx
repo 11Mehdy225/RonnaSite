@@ -604,6 +604,7 @@ import ImageExt from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import ImageUploader from "../../components/admin/ImageUploader.jsx";
 import { deleteNews } from "../../lib/adminApi.js";
+import ContentPreview from "../../components/admin/ContentPreview.jsx";
 
 const CATEGORY_OPTIONS = [
   { value: "COMMUNIQUE", label: "Communiqué" },
@@ -622,6 +623,7 @@ export default function AdminNewsForm({ mode = "create" }) {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState(null);
   const [notice, setNotice] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [, setEditorRevision] = useState(0);
 
   // Meta
@@ -814,6 +816,9 @@ export default function AdminNewsForm({ mode = "create" }) {
         </div>
 
         <div style={styles.actions}>
+          <button type="button" style={styles.btnGhost} onClick={() => setPreviewOpen(true)}>
+            Aperçu
+          </button>
           {isEdit && (
             <button type="button" style={styles.btnDanger} onClick={remove} disabled={saving}>
               Supprimer
@@ -838,6 +843,13 @@ export default function AdminNewsForm({ mode = "create" }) {
           </button>
         </div>
       </div>
+
+      <ContentPreview
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        type="Actualité"
+        data={{ title, excerpt, category, coverImage, content: editorHtml, published }}
+      />
 
       {loading && <div style={styles.state}>Chargement…</div>}
       {!loading && err && <div style={{ ...styles.state, ...styles.stateErr }}>{err}</div>}

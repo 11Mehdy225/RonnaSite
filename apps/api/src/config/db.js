@@ -27,6 +27,12 @@ export async function connectMongo() {
       await nextClient.connect();
       const nextDb = nextClient.db(dbName);
       await nextDb.command({ ping: 1 });
+      await Promise.all([
+        nextDb.collection("quote_requests").createIndex({ status: 1, createdAt: -1 }),
+        nextDb.collection("admin_activity").createIndex({ createdAt: -1 }),
+        nextDb.collection("analytics_events").createIndex({ createdAt: 1 }, { expireAfterSeconds: 34560000 }),
+        nextDb.collection("analytics_events").createIndex({ event: 1, createdAt: -1 }),
+      ]).catch((indexError) => console.warn("MongoDB indexes warning:", indexError?.message || indexError));
       client = nextClient;
       db = nextDb;
       console.log(`✅ MongoDB connecté à la base : ${dbName}`);

@@ -22,6 +22,10 @@ const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard.jsx"));
 const AdminProjectsForm = lazy(() => import("../pages/admin/AdminProjectsForm.jsx"));
 const AdminFoundationForm = lazy(() => import("../pages/admin/AdminFoundationForm.jsx"));
 const AdminSettings = lazy(() => import("../pages/admin/AdminSettings.jsx"));
+const AdminMedia = lazy(() => import("../pages/admin/AdminMedia.jsx"));
+const AdminActivity = lazy(() => import("../pages/admin/AdminActivity.jsx"));
+const AdminForgotPassword = lazy(() => import("../pages/admin/AdminForgotPassword.jsx"));
+const AdminResetPassword = lazy(() => import("../pages/admin/AdminResetPassword.jsx"));
 
 
 
@@ -29,6 +33,8 @@ export const routes = [
   { path: "/", element: <Home /> },
    // ADMIN
   { path: "/admin/login", element: <AdminLogin /> },
+  { path: "/admin/forgot-password", element: <AdminForgotPassword /> },
+  { path: "/admin/reset-password", element: <AdminResetPassword /> },
   {
     path: "/admin",
     element: (
@@ -49,6 +55,8 @@ export const routes = [
       { path: "foundation/new", element: <AdminFoundationForm mode="create" /> },
       { path: "foundation/:id/edit", element: <AdminFoundationForm mode="edit" /> },
       { path: "settings", element: <AdminSettings /> },
+      { path: "media", element: <AdminMedia /> },
+      { path: "activity", element: <AdminActivity /> },
     ]
   },
 

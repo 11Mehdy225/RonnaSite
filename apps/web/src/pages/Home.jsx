@@ -30,7 +30,7 @@ export default function Home() {
      <SEO
   title="Accueil"
   description="Ronna Group développe des projets stratégiques et des actions solidaires en Côte d’Ivoire."
-  canonical="https://ronnagroup.net/"
+  canonical="https://www.ronnagroup.net/"
 />
     <main>
       <section style={styles.hero}>
@@ -44,6 +44,27 @@ export default function Home() {
         <div style={styles.container}>
           <div style={styles.grid}>
             <ServicesBanners/>
+          </div>
+        </div>
+      </section>
+
+      <section id="methode" style={styles.sectionAlt}>
+        <div style={styles.container}>
+          <div style={styles.kicker}>Notre méthode</div>
+          <h2 style={styles.h2}>Un accompagnement clair, de l’idée au suivi</h2>
+          <div style={styles.methodGrid}>
+            {[
+              ["01", "Comprendre", "Nous clarifions le besoin, les utilisateurs et les objectifs prioritaires."],
+              ["02", "Cadrer", "Nous définissons le périmètre, les étapes, les responsabilités et les critères de réussite."],
+              ["03", "Réaliser", "Nous avançons par étapes visibles avec des validations régulières."],
+              ["04", "Accompagner", "Nous préparons la mise en service, le transfert et les évolutions utiles."],
+            ].map(([number, title, text]) => (
+              <article key={number} style={styles.methodCard}>
+                <span style={styles.methodNumber}>{number}</span>
+                <h3 style={styles.methodTitle}>{title}</h3>
+                <p style={styles.methodText}>{text}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -208,5 +229,10 @@ const styles = {
   partnerCard: { display: "flex", alignItems: "center", gap: 16, padding: 16, borderRadius: 22, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)" },
   partnerLogo: { width: 86, height: 86, objectFit: "contain", borderRadius: 18, background: "white" },
   partnerName: { display: "block", fontSize: 17 },
-  partnerLabel: { marginTop: 5, color: "rgba(255,255,255,0.62)", fontSize: 13 }
+  partnerLabel: { marginTop: 5, color: "rgba(255,255,255,0.62)", fontSize: 13 },
+  methodGrid: { marginTop: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: 12 },
+  methodCard: { padding: 18, borderRadius: 20, border: "1px solid rgba(255,255,255,.1)", background: "rgba(3,10,26,.4)" },
+  methodNumber: { color: "rgba(95,183,255,.92)", fontWeight: 900, letterSpacing: ".08em" },
+  methodTitle: { margin: "12px 0 6px", fontSize: 18 },
+  methodText: { margin: 0, color: "rgba(255,255,255,.7)", lineHeight: 1.65, fontSize: 14 },
 };

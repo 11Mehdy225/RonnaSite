@@ -4,6 +4,7 @@ import { GridFSBucket } from "mongodb";
 import { getDb } from "../config/db.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
+import { recordAdminActivity } from "../utils/adminActivity.js";
 
 const router = express.Router();
 
@@ -34,6 +35,8 @@ router.post("/admin/upload", requireAdmin, requireAdminCsrf, upload.single("file
     });
 
     const url = `/api/media/${stream.id}`;
+
+    await recordAdminActivity(req, "UPLOAD", "media", stream.id, { filename, size: req.file.size });
 
     res.json({
       ok: true,

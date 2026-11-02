@@ -5,6 +5,7 @@ import { requireAdmin } from "../middleware/auth.js";
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
 import { slugify } from "../utils/slugify.js";
 import { deleteUnreferencedMedia } from "../utils/mediaStorage.js";
+import { recordAdminActivity } from "../utils/adminActivity.js";
 
 const router = express.Router();
 
@@ -127,6 +128,8 @@ if (doc.ctaSecondaryType === "CONTACT") doc.ctaSecondaryUrl = "";
     const r = await db.collection("projects").insertOne(doc);
     const item = await db.collection("projects").findOne({ _id: r.insertedId });
 
+    await recordAdminActivity(req, "CREATE", "project", item._id, { title: item.title, published: item.published });
+
     res.status(201).json({ ok: true, item });
   } catch (err) {
     console.error("POST /api/admin/projects error:", err);
@@ -203,6 +206,8 @@ if (next.ctaSecondaryType === "CONTACT") next.ctaSecondaryUrl = "";
     const currentMedia = new Set([item.coverImage, ...(Array.isArray(item.gallery) ? item.gallery : [])]);
     await deleteUnreferencedMedia(db, previousMedia.filter((url) => !currentMedia.has(url)));
 
+    await recordAdminActivity(req, "UPDATE", "project", item._id, { title: item.title, published: item.published });
+
     res.json({ ok: true, item });
   } catch (err) {
     console.error("PATCH /api/admin/projects/:id error:", err);
@@ -225,6 +230,8 @@ router.delete("/admin/projects/:id", requireAdmin,requireAdminCsrf, async (req, 
       existing.coverImage,
       ...(Array.isArray(existing.gallery) ? existing.gallery : []),
     ]);
+
+    await recordAdminActivity(req, "DELETE", "project", existing._id, { title: existing.title });
 
     res.json({ ok: true });
   } catch {

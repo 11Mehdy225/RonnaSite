@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
   const nav = useNavigate();
@@ -110,6 +110,7 @@ export default function AdminLogin() {
           <button type="submit" disabled={loading} style={{ ...styles.btn, ...(loading ? styles.btnDis : null) }}>
             {loading ? "Connexion..." : "Se connecter"}
           </button>
+          <Link to="/admin/forgot-password" style={styles.forgot}>Mot de passe oublié ?</Link>
         </form>
       </div>
     </main>
@@ -154,5 +155,6 @@ const styles = {
     boxShadow: "0 10px 26px rgba(31,79,216,.18)",
     cursor: "pointer"
   },
-  btnDis: { opacity: 0.7, cursor: "not-allowed" }
+  btnDis: { opacity: 0.7, cursor: "not-allowed" },
+  forgot: { justifySelf: "center", color: "rgba(95,183,255,.95)", fontSize: 13 }
 };

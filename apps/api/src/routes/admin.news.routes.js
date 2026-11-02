@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import { requireAdmin } from "../middleware/auth.js"; 
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
 import { deleteUnreferencedMedia } from "../utils/mediaStorage.js";
+import { recordAdminActivity } from "../utils/adminActivity.js";
 
 const router = express.Router();
 
@@ -142,6 +143,8 @@ router.post("/admin/news", requireAdmin,requireAdminCsrf, async (req, res) => {
     const r = await db.collection("news").insertOne(doc);
     const item = await db.collection("news").findOne({ _id: r.insertedId });
 
+    await recordAdminActivity(req, "CREATE", "news", item._id, { title: item.title, published: item.published });
+
     res.status(201).json({ ok: true, item });
   } catch (err) {
     console.error("POST /api/admin/news error:", err);
@@ -197,6 +200,8 @@ router.patch("/admin/news/:id", requireAdmin,requireAdminCsrf, async (req, res) 
       await deleteUnreferencedMedia(db, [existing.coverImage]);
     }
 
+    await recordAdminActivity(req, "UPDATE", "news", item._id, { title: item.title, published: item.published });
+
     res.json({ ok: true, item });
   } catch (err) {
     console.error("PATCH /api/admin/news/:id error:", err);
@@ -217,6 +222,8 @@ router.delete("/admin/news/:id", requireAdmin,requireAdminCsrf, async (req, res)
     if (r.deletedCount === 0) return res.status(404).json({ ok: false, message: "Introuvable" });
 
     await deleteUnreferencedMedia(db, [existing.coverImage]);
+
+    await recordAdminActivity(req, "DELETE", "news", existing._id, { title: existing.title });
 
     res.json({ ok: true });
   } catch (err) {

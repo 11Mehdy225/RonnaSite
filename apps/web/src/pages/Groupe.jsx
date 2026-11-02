@@ -15,7 +15,7 @@ export default function Groupe() {
     <SEO
       title="Le Groupe"
       description="Découvrez la vision, le fondateur et les ambitions de Ronna Group en Côte d’Ivoire."
-      canonical="https://ronnagroup.net/groupe"
+      canonical="https://www.ronnagroup.net/groupe"
     />
     <main style={styles.page}>
       <section className="rg-twoCol" style={styles.container}>

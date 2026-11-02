@@ -90,7 +90,7 @@ export default function Realisations() {
      <SEO
   title="Réalisations"
   description="Découvrez les applications, plateformes et solutions numériques conçues par RONNA GROUP."
-  canonical="https://ronnagroup.net/realisations"
+  canonical="https://www.ronnagroup.net/realisations"
 />
     <main style={styles.page}>
       <header style={styles.hero}>

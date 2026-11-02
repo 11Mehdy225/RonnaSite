@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ImageUploader from "../../components/admin/ImageUploader.jsx";
 import GalleryUploader from "../../components/admin/GalleryUploader.jsx";
+import ContentPreview from "../../components/admin/ContentPreview.jsx";
 
 const CTA_SECONDARY_TYPES = [
   { value: "CONTACT", label: "Contact (redirige vers /contact)" },
@@ -47,6 +48,7 @@ export default function AdminProjectsForm({ mode }) {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null); // {type:'ok'|'err', text:''}
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const setField = (name, value) => {
     setData((d) => ({ ...d, [name]: value }));
@@ -212,6 +214,9 @@ export default function AdminProjectsForm({ mode }) {
         </div>
 
         <div style={styles.actions}>
+          <button type="button" style={styles.btnGhost} onClick={() => setPreviewOpen(true)}>
+            Aperçu
+          </button>
           <Link to="/admin/projects" style={styles.btnGhost}>
             ← Retour liste
           </Link>
@@ -225,6 +230,8 @@ export default function AdminProjectsForm({ mode }) {
           </button>
         </div>
       </div>
+
+      <ContentPreview open={previewOpen} onClose={() => setPreviewOpen(false)} type="Réalisation" data={data} />
 
       {notice && (
         <div

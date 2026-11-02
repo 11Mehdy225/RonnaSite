@@ -238,7 +238,7 @@ export default function Fondation() {
     <SEO
   title="Fondation"
   description="La Fondation Ronna soutient des actions sociales, éducatives et communautaires."
-  canonical="https://ronnagroup.net/fondation"
+  canonical="https://www.ronnagroup.net/fondation"
 />
     <main style={styles.page}>
       {/* HERO sticky */}

@@ -229,6 +229,22 @@ export async function sendContactAcknowledgement({ payload, id }) {
   return { sent: true };
 }
 
+export async function sendPasswordResetMail({ to, resetUrl }) {
+  const t = getTransporter();
+  if (!t || !to) return { skipped: true };
+  const from = process.env.MAIL_FROM || `"RONNA GROUP" <contact@ronna-grp.com>`;
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#13213c">
+      <h2 style="color:#1f4fd8">Réinitialisation du mot de passe</h2>
+      <p>Une demande de réinitialisation a été effectuée pour votre compte administrateur.</p>
+      <p><a href="${escapeHtml(resetUrl)}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#1f4fd8;color:white;text-decoration:none">Choisir un nouveau mot de passe</a></p>
+      <p>Ce lien expire dans 30 minutes. Si vous n’êtes pas à l’origine de cette demande, ignorez cet email.</p>
+    </div>
+  `;
+  await t.sendMail({ from, to, subject: "Réinitialiser votre mot de passe | RONNA GROUP", html, replyTo: CONTACT_RECIPIENT });
+  return { sent: true };
+}
+
 // --- COMPAT: anciens controllers (quotes) ---
 export async function sendQuoteEmailToTeam(payload) {
   // payload vient de quote.controller: { fullName, email, phone, company, role, service, subject, message, ... }

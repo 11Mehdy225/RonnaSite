@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
-const STATUS = ["NEW", "IN_PROGRESS", "DONE"];
+const STATUS = ["NEW", "CONTACTED", "IN_PROGRESS", "DONE"];
+const STATUS_LABELS = { NEW: "Nouvelle", CONTACTED: "Contactée", IN_PROGRESS: "En cours", DONE: "Terminée" };
 
 export default function AdminQuotes() {
   // const token = localStorage.getItem("rg_admin_token");
@@ -153,7 +154,7 @@ const onLogout = async () => {
             <option value="ALL">Tous</option>
             {STATUS.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {STATUS_LABELS[s]}
               </option>
             ))}
           </select>
@@ -192,7 +193,7 @@ const onLogout = async () => {
                 >
                   <div style={styles.rowTop}>
                     <div style={styles.rowName}>{q.fullName || "—"}</div>
-                    <span style={{ ...styles.badge, ...badgeStyle(q.status) }}>{q.status || "NEW"}</span>
+                    <span style={{ ...styles.badge, ...badgeStyle(q.status) }}>{STATUS_LABELS[q.status || "NEW"]}</span>
                   </div>
                   <div style={styles.rowSub}>
                     <span>{q.service || "—"}</span>
@@ -259,6 +260,13 @@ function QuoteDetail({ q, onUpdate }) {
             <a href={`mailto:${q.email}`} style={styles.detailLink}>{q.email}</a>
             <span style={styles.dot}>•</span>
             <a href={`tel:${q.phone}`} style={styles.detailLink}>{q.phone}</a>
+            <span style={styles.dot}>•</span>
+            <a
+              href={`https://wa.me/${String(q.phone || "").replace(/\D/g, "")}?text=${encodeURIComponent(`Bonjour ${q.fullName || ""}, nous revenons vers vous concernant votre demande de devis RONNA GROUP.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.detailLink}
+            >WhatsApp</a>
           </div>
           <div style={styles.detailSmall}>
             {q.company} — {q.role}
@@ -266,7 +274,7 @@ function QuoteDetail({ q, onUpdate }) {
         </div>
 
         <span style={{ ...styles.badge, ...badgeStyle(q.status) }}>
-          {q.status || "NEW"}
+          {STATUS_LABELS[q.status || "NEW"]}
         </span>
       </div>
 
@@ -290,8 +298,8 @@ function QuoteDetail({ q, onUpdate }) {
         <div style={styles.row2}>
           <label style={styles.label}>Statut</label>
           <select value={status} onChange={(e) => setStatus(e.target.value)} style={styles.select}>
-            {["NEW", "IN_PROGRESS", "DONE"].map((s) => (
-              <option key={s} value={s}>{s}</option>
+            {STATUS.map((s) => (
+              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
           </select>
         </div>
@@ -322,6 +330,7 @@ function QuoteDetail({ q, onUpdate }) {
 function badgeStyle(status) {
   if (status === "DONE") return { background: "rgba(34,197,94,0.14)", borderColor: "rgba(34,197,94,0.30)" };
   if (status === "IN_PROGRESS") return { background: "rgba(245,158,11,0.14)", borderColor: "rgba(245,158,11,0.30)" };
+  if (status === "CONTACTED") return { background: "rgba(168,85,247,0.14)", borderColor: "rgba(168,85,247,0.30)" };
   return { background: "rgba(59,130,246,0.14)", borderColor: "rgba(59,130,246,0.30)" };
 }
 

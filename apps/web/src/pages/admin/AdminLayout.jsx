@@ -10,6 +10,8 @@ const NAV = [
   { to: "/admin/news", label: "Actualités", group: "Contenu" },
   { to: "/admin/projects", label: "Réalisations", group: "Contenu" },
   { to: "/admin/foundation", label: "Fondation", group: "Contenu" },
+  { to: "/admin/media", label: "Médiathèque", group: "Contenu" },
+  { to: "/admin/activity", label: "Historique", group: "Général" },
   { to: "/admin/settings", label: "Sécurité", group: "Général" },
 ];
 

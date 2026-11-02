@@ -20,6 +20,9 @@ import adminProjectsRoutes from "./routes/admin.projects.routes.js";
 import adminUploadRoutes from "./routes/admin.upload.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import mediaRoutes from "./routes/media.routes.js";
+import adminActivityRoutes from "./routes/admin.activity.routes.js";
+import adminMediaRoutes from "./routes/admin.media.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 
 const app = express();
 /* ─────────────────────────────────────
@@ -110,6 +113,8 @@ const __dirname = path.dirname(__filename);
 ───────────────────────────────────── */
 
 app.use("/api/admin/auth/login", loginLimiter);
+app.use("/api/admin/auth/forgot-password", loginLimiter);
+app.use("/api/admin/auth/reset-password", loginLimiter);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api", quoteRoutes);
 app.use("/api", newsRoutes);
@@ -123,6 +128,9 @@ app.use("/api", adminProjectsRoutes);
 app.use("/api", adminUploadRoutes);
 app.use("/api", contactRoutes);
 app.use("/api", mediaRoutes);
+app.use("/api", adminActivityRoutes);
+app.use("/api", adminMediaRoutes);
+app.use("/api", analyticsRoutes);
 
 
 

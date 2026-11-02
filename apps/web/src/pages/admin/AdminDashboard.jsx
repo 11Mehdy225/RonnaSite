@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ quotes: 0, news: 0, projects: 0, foundation: 0 });
+  const [recentQuotes, setRecentQuotes] = useState([]);
+  const [analytics, setAnalytics] = useState({});
+  const [system, setSystem] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,8 +15,8 @@ export default function AdminDashboard() {
       setLoading(true);
       try {
         // On récupère juste des totaux. Si tu n’as pas d’endpoint stats, on fait simple:
-        const [q, n, p, f] = await Promise.all([
-          fetch("/api/admin/quotes?limit=1&page=1", { credentials: "include" })
+        const [q, n, p, f, a, systemStatus] = await Promise.all([
+          fetch("/api/admin/quotes?limit=5&page=1", { credentials: "include" })
             .then(r => r.json()).catch(() => ({})),
           fetch("/api/admin/news?status=ALL&limit=1&page=1", { credentials: "include" })
             .then(r => r.json()).catch(() => ({})),
@@ -21,6 +24,10 @@ export default function AdminDashboard() {
             .then(r => r.json()).catch(() => ({})),
           fetch("/api/admin/foundation/actions?status=ALL&limit=1&page=1", { credentials: "include" })
             .then(r => r.json()).catch(() => ({})),
+          fetch("/api/admin/analytics", { credentials: "include" })
+            .then(r => r.json()).catch(() => ({})),
+          fetch("/api/admin/system-status", { credentials: "include" })
+            .then(r => r.json()).catch(() => ({ ok: false })),
         ]);
 
         if (!cancelled) {
@@ -30,6 +37,9 @@ export default function AdminDashboard() {
             projects: p?.total || 0,
             foundation: f?.total || 0,
           });
+          setRecentQuotes(q?.items || []);
+          setAnalytics(Object.fromEntries((a?.byEvent || []).map((item) => [item._id, item.count])));
+          setSystem(systemStatus);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -53,6 +63,8 @@ export default function AdminDashboard() {
           <Kpi title="Actualités" value={stats.news} to="/admin/news" />
           <Kpi title="Réalisations" value={stats.projects} to="/admin/projects" />
           <Kpi title="Fondation" value={stats.foundation} to="/admin/foundation" />
+          <Kpi title="Pages vues (30 j)" value={analytics.page_view || 0} to="/admin/activity" />
+          <Kpi title="Demandes envoyées (30 j)" value={analytics.quote_submitted || 0} to="/admin/quotes" />
         </div>
       )}
 
@@ -60,7 +72,27 @@ export default function AdminDashboard() {
         <Link to="/admin/news/new" style={styles.btn}>+ Nouvelle actu</Link>
         <Link to="/admin/projects/new" style={styles.btnGhost}>+ Nouvelle réalisation</Link>
         <Link to="/admin/foundation/new" style={styles.btnGhost}>+ Nouvelle action</Link>
+        <Link to="/admin/media" style={styles.btnGhost}>Médiathèque</Link>
+        <a href="/api/admin/backup" style={styles.btnGhost}>Télécharger une sauvegarde</a>
       </div>
+
+      <div style={styles.system}>
+        <strong>État des services</strong>
+        <span>Base de données : {system?.database === "connected" ? `connectée (${system.databaseLatencyMs} ms)` : "indisponible"}</span>
+        <span>Email : {system?.emailConfigured ? "configuré" : "à vérifier"}</span>
+        <span>Surveillance publique : <code>/api/health</code></span>
+      </div>
+
+      <section style={styles.recent}>
+        <h2 style={styles.h2}>Demandes récentes</h2>
+        {recentQuotes.length ? recentQuotes.map((quote) => (
+          <Link key={quote._id} to="/admin/quotes" style={styles.quote}>
+            <strong>{quote.fullName || "Sans nom"}</strong>
+            <span>{quote.subject || quote.service || "Demande de devis"}</span>
+            <small>{quote.status || "NEW"} · {quote.createdAt ? new Date(quote.createdAt).toLocaleString("fr-FR") : ""}</small>
+          </Link>
+        )) : <div style={styles.card}>Aucune demande récente.</div>}
+      </section>
     </div>
   );
 }
@@ -104,6 +136,10 @@ const styles = {
   kpiHint: { color: "rgba(120,170,255,0.90)", fontSize: 12 },
 
   quick: { marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" },
+  recent: { marginTop: 28 },
+  h2: { fontSize: 18, marginBottom: 10 },
+  quote: { display: "grid", gap: 4, padding: 12, marginBottom: 8, borderRadius: 14, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)" },
+  system: { marginTop: 18, display: "flex", gap: 12, flexWrap: "wrap", padding: 13, borderRadius: 14, border: "1px solid rgba(34,197,94,.2)", background: "rgba(34,197,94,.06)", color: "rgba(255,255,255,.75)" },
   btn: {
     padding: "10px 14px",
     borderRadius: 999,

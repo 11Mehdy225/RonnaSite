@@ -6,7 +6,7 @@ function uniqueMediaUrls(values) {
   return [...new Set(values.flat().filter((value) => MEDIA_URL_RE.test(String(value || "").trim())))];
 }
 
-async function isMediaReferenced(db, url) {
+export async function isMediaReferenced(db, url) {
   const [news, project, foundation] = await Promise.all([
     db.collection("news").findOne({ coverImage: url }, { projection: { _id: 1 } }),
     db.collection("projects").findOne(

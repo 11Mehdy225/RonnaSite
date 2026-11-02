@@ -85,7 +85,7 @@ export default function RealisationDetail() {
       <SEO
         title={item.title}
         description={item.excerpt || "Réalisation RONNA GROUP"}
-        canonical={`https://ronnagroup.net/realisations/${item.slug}`}
+        canonical={`https://www.ronnagroup.net/realisations/${item.slug}`}
         image={item.coverImage || "/favicon.PNG"}
         type="article"
         structuredData={{
@@ -94,9 +94,9 @@ export default function RealisationDetail() {
           name: item.title,
           description: item.excerpt || "",
           image: item.coverImage
-            ? (item.coverImage.startsWith("http") ? item.coverImage : `https://ronnagroup.net${item.coverImage}`)
-            : "https://ronnagroup.net/favicon.PNG",
-          creator: { "@type": "Organization", name: "RONNA GROUP", url: "https://ronnagroup.net" },
+            ? (item.coverImage.startsWith("http") ? item.coverImage : `https://www.ronnagroup.net${item.coverImage}`)
+            : "https://www.ronnagroup.net/favicon.PNG",
+          creator: { "@type": "Organization", name: "RONNA GROUP", url: "https://www.ronnagroup.net" },
         }}
       />
     )}

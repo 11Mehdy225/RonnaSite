@@ -70,11 +70,12 @@ import { z } from "zod";
 import { getDb } from "../config/db.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { requireAdminCsrf } from "../middleware/adminCsrf.js";
+import { recordAdminActivity } from "../utils/adminActivity.js";
 
 const router = express.Router();
 
-const StatusEnum = z.enum(["NEW", "IN_PROGRESS", "DONE"]);
-const StatusQuery = z.enum(["ALL", "NEW", "IN_PROGRESS", "DONE"]).default("ALL");
+const StatusEnum = z.enum(["NEW", "CONTACTED", "IN_PROGRESS", "DONE"]);
+const StatusQuery = z.enum(["ALL", "NEW", "CONTACTED", "IN_PROGRESS", "DONE"]).default("ALL");
 
 router.get("/admin/quotes", requireAdmin,requireAdminCsrf, async (req, res) => {
   try {
@@ -145,6 +146,7 @@ router.patch("/admin/quotes/:id", requireAdmin,requireAdminCsrf, async (req, res
     }
 
     const item = await col.findOne({ _id: new ObjectId(id) });
+    await recordAdminActivity(req, "UPDATE", "quote", item._id, { status: item.status });
     return res.json({ ok: true, item });
   } catch (e) {
     if (e?.name === "ZodError") {

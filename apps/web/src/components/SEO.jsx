@@ -8,7 +8,7 @@ export default function SEO({
   type = "website",
   structuredData,
 }) {
-  const siteUrl = "https://ronnagroup.net";
+  const siteUrl = "https://www.ronnagroup.net";
   const fullTitle = title.includes("RONNA") ? title : `${title} | RONNA GROUP`;
   const fullImage = image.startsWith("http") ? image : `${siteUrl}${image.startsWith("/") ? image : `/${image}`}`;
   const schema = structuredData || {
@@ -18,12 +18,29 @@ export default function SEO({
     url: siteUrl,
     logo: `${siteUrl}/favicon.PNG`,
     description,
+    email: "contact@ronnagroup.net",
+    telephone: "+2250151704444",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Abidjan",
+      addressCountry: "CI",
+    },
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: "+2250151704444",
+      contactType: "customer service",
+      availableLanguage: ["fr"],
+    },
+    sameAs: ["https://www.instagram.com/ronna_group"],
   };
 
   return (
     <Helmet>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
+      {import.meta.env.VITE_GOOGLE_SITE_VERIFICATION && (
+        <meta name="google-site-verification" content={import.meta.env.VITE_GOOGLE_SITE_VERIFICATION} />
+      )}
 
       {canonical && <link rel="canonical" href={canonical} />}
 

@@ -343,6 +343,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { adminFetch } from "../../lib/adminApi.js";
 import ImageUploader from "../../components/admin/ImageUploader.jsx";
+import ContentPreview from "../../components/admin/ContentPreview.jsx";
 
 function toInputDate(iso) {
   if (!iso) return "";
@@ -401,6 +402,7 @@ export default function AdminFoundationForm({ mode = "create" }) {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null); // {type:'ok'|'err', text:''}
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [errors, setErrors] = useState({});
 
   const initial = useMemo(
@@ -533,6 +535,9 @@ export default function AdminFoundationForm({ mode = "create" }) {
         </div>
 
         <div style={styles.actions}>
+          <button type="button" onClick={() => setPreviewOpen(true)} style={styles.btnGhost}>
+            Aperçu
+          </button>
           <button type="button" onClick={() => nav(-1)} style={styles.btnGhost}>
             Annuler
           </button>
@@ -546,6 +551,8 @@ export default function AdminFoundationForm({ mode = "create" }) {
           </button>
         </div>
       </div>
+
+      <ContentPreview open={previewOpen} onClose={() => setPreviewOpen(false)} type="Fondation" data={data} />
 
       {notice && (
         <div
