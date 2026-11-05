@@ -119,13 +119,23 @@ export default function Home() {
 
       <section style={styles.auditSection}>
         <div style={styles.container}>
-          <div className="rg-home-audit" style={styles.auditCard}>
-            <div>
-              <div style={styles.kicker}>Nouvel outil gratuit</div>
-              <h2 style={styles.auditTitle}>Mesurez la maturité numérique de votre entreprise.</h2>
-              <p style={styles.auditText}>10 questions, un score immédiat et trois priorités concrètes pour progresser.</p>
+          <div className="rg-home-tools" style={styles.toolsGrid}>
+            <div className="rg-home-audit" style={styles.auditCard}>
+              <div>
+                <div style={styles.kicker}>Diagnostic gratuit</div>
+                <h2 style={styles.auditTitle}>Mesurez votre maturité numérique.</h2>
+                <p style={styles.auditText}>10 questions, un score immédiat et trois priorités concrètes.</p>
+              </div>
+              <Link to="/audit-express" style={styles.auditButton}>Lancer l’audit →</Link>
             </div>
-            <Link to="/audit-express" style={styles.auditButton}>Lancer l’Audit Express →</Link>
+            <div className="rg-home-audit" style={{...styles.auditCard,...styles.devisCard}}>
+              <div>
+                <div style={styles.kicker}>Estimation gratuite</div>
+                <h2 style={styles.auditTitle}>Estimez votre projet numérique.</h2>
+                <p style={styles.auditText}>Une fourchette de budget et de délai en moins de 2 minutes.</p>
+              </div>
+              <Link to="/devis-express" style={styles.auditButton}>Obtenir mon estimation →</Link>
+            </div>
           </div>
         </div>
       </section>
@@ -255,7 +265,9 @@ const styles = {
   methodTitle: { margin: "12px 0 6px", fontSize: 18 },
   methodText: { margin: 0, color: "rgba(255,255,255,.7)", lineHeight: 1.65, fontSize: 14 },
   auditSection: { padding: "6px 0 44px" },
-  auditCard: { padding: "30px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 28, borderRadius: 24, border: "1px solid rgba(112,149,244,.28)", background: "linear-gradient(120deg,rgba(31,79,216,.2),rgba(255,255,255,.035))" },
+  toolsGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))", gap: 14 },
+  auditCard: { padding: "26px", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "space-between", gap: 24, borderRadius: 24, border: "1px solid rgba(112,149,244,.28)", background: "linear-gradient(120deg,rgba(31,79,216,.2),rgba(255,255,255,.035))" },
+  devisCard: { background: "linear-gradient(120deg,rgba(17,107,146,.2),rgba(255,255,255,.035))", borderColor: "rgba(87,184,224,.25)" },
   auditTitle: { maxWidth: 680, margin: "7px 0 8px", fontSize: "clamp(23px,3vw,34px)" },
   auditText: { margin: 0, color: "rgba(255,255,255,.68)", lineHeight: 1.6 },
   auditButton: { flexShrink: 0, padding: "13px 16px", borderRadius: 999, background: "#1f4fd8", border: "1px solid rgba(255,255,255,.14)", color: "white", fontWeight: 800, textDecoration: "none" },

@@ -70,8 +70,8 @@ export default function Navbar() {
             </Link>
           ))}
 
-          <Link to="/contact" style={styles.cta} onClick={() => setOpen(false)}>
-            Demander un devis
+          <Link to="/devis-express" style={styles.cta} onClick={() => setOpen(false)}>
+            Devis express
           </Link>
         </nav>
 
@@ -117,8 +117,8 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
-            <Link to="/contact" style={styles.mobileCta} onClick={() => setOpen(false)}>
-              Demander un devis
+            <Link to="/devis-express" style={styles.mobileCta} onClick={() => setOpen(false)}>
+              Estimer mon projet
             </Link>
           </div>
         </div>
