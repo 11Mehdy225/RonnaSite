@@ -15,6 +15,7 @@ const CahierDesCharges = lazy(() => import("../pages/CahierDesCharges.jsx"));
 const DiagnosticVisibilite = lazy(() => import("../pages/DiagnosticVisibilite.jsx"));
 const CalculateurROI = lazy(() => import("../pages/CalculateurROI.jsx"));
 const PlanTransformation = lazy(() => import("../pages/PlanTransformation.jsx"));
+const Outils = lazy(() => import("../pages/Outils.jsx"));
 
 const AdminLogin = lazy(() => import("../components/admin/AdminLogin.jsx"));
 const AdminQuotes = lazy(() => import("../components/admin/AdminQuotes.jsx"));
@@ -78,6 +79,7 @@ export const routes = [
   { path: "/diagnostic-visibilite", element: <DiagnosticVisibilite /> },
   { path: "/calculateur-roi", element: <CalculateurROI /> },
   { path: "/plan-transformation", element: <PlanTransformation /> },
+  { path: "/outils", element: <Outils /> },
   { path: "/contact", element: <Contact /> },
   { path: "/fondation", element: <Fondation /> }
 ];

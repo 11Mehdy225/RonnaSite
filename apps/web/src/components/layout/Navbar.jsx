@@ -3,9 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 const NAV = [
-  { label: "Accueil", to: "/" },
   { label: "Le Groupe", to: "/groupe" },
   { label: "Services", to: "/services" },
+  { label: "Outils", to: "/outils" },
   { label: "Actualités", to: "/actualites" },
   { label: "Realisations", to: "/realisations" },
   { label: "Contact", to: "/contact" },

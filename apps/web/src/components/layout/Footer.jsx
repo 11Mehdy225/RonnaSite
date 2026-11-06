@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 const NAVIGATION = [
   { label: "Le Groupe", to: "/groupe" },
   { label: "Nos services", to: "/services" },
+  { label: "Outils gratuits", to: "/outils" },
   { label: "Réalisations", to: "/realisations" },
   { label: "Actualités", to: "/actualites" },
   { label: "Fondation", to: "/fondation" },
