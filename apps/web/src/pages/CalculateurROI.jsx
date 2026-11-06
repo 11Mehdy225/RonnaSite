@@ -123,7 +123,7 @@ export default function CalculateurROI() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data?.ok === false) throw new Error(data?.message || "Impossible de transmettre la simulation.");
-      trackEvent("quote_submitted", "/calculateur-roi-digital");
+      trackEvent("quote_submitted", "/calculateur-roi");
       setSent(true);
     } catch (submissionError) {
       setError(submissionError?.message || "Une erreur est survenue.");

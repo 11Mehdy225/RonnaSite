@@ -12,6 +12,7 @@ const NAV = [
   { to: "/admin/foundation", label: "Fondation", group: "Contenu" },
   { to: "/admin/media", label: "Médiathèque", group: "Contenu" },
   { to: "/admin/activity", label: "Historique", group: "Général" },
+  { to: "/admin/analytics", label: "Campagnes", group: "Général" },
   { to: "/admin/settings", label: "Sécurité", group: "Général" },
 ];
 

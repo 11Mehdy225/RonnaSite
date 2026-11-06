@@ -5,6 +5,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ quotes: 0, news: 0, projects: 0, foundation: 0 });
   const [recentQuotes, setRecentQuotes] = useState([]);
   const [analytics, setAnalytics] = useState({});
+  const [campaignCount, setCampaignCount] = useState(0);
   const [system, setSystem] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +40,7 @@ export default function AdminDashboard() {
           });
           setRecentQuotes(q?.items || []);
           setAnalytics(Object.fromEntries((a?.byEvent || []).map((item) => [item._id, item.count])));
+          setCampaignCount((a?.byCampaign || []).filter((item) => item._id?.name && item._id.name !== "not_set").length);
           setSystem(systemStatus);
         }
       } finally {
@@ -65,6 +67,8 @@ export default function AdminDashboard() {
           <Kpi title="Fondation" value={stats.foundation} to="/admin/foundation" />
           <Kpi title="Pages vues (30 j)" value={analytics.page_view || 0} to="/admin/activity" />
           <Kpi title="Demandes envoyées (30 j)" value={analytics.quote_submitted || 0} to="/admin/quotes" />
+          <Kpi title="Résultats d’outils (30 j)" value={analytics.tool_completed || 0} to="/admin/analytics" />
+          <Kpi title="Campagnes détectées" value={campaignCount} to="/admin/analytics" />
         </div>
       )}
 
@@ -73,6 +77,7 @@ export default function AdminDashboard() {
         <Link to="/admin/projects/new" style={styles.btnGhost}>+ Nouvelle réalisation</Link>
         <Link to="/admin/foundation/new" style={styles.btnGhost}>+ Nouvelle action</Link>
         <Link to="/admin/media" style={styles.btnGhost}>Médiathèque</Link>
+        <Link to="/admin/analytics" style={styles.btnGhost}>Mesure des campagnes</Link>
         <a href="/api/admin/backup" style={styles.btnGhost}>Télécharger une sauvegarde</a>
       </div>
 

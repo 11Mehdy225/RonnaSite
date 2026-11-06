@@ -4,9 +4,19 @@ import { getDb } from "../config/db.js";
 import { requireAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
+const CampaignSchema = z.object({
+  source: z.string().max(120).optional(),
+  medium: z.string().max(120).optional(),
+  name: z.string().max(120).optional(),
+  content: z.string().max(120).optional(),
+  term: z.string().max(120).optional(),
+  landingPage: z.string().max(240).optional(),
+  referrer: z.string().max(120).optional(),
+}).strict();
 const EventSchema = z.object({
-  event: z.enum(["page_view", "quote_submitted", "whatsapp_click", "phone_click", "email_click"]),
+  event: z.enum(["page_view", "tool_click", "tool_started", "tool_completed", "quote_submitted", "whatsapp_click", "phone_click", "email_click"]),
   path: z.string().max(240).default("/"),
+  campaign: CampaignSchema.optional().default({}),
 });
 
 router.post("/analytics/event", async (req, res) => {
@@ -23,11 +33,14 @@ router.post("/analytics/event", async (req, res) => {
 
 router.get("/admin/analytics", requireAdmin, async (req, res) => {
   try {
-    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const requestedDays = Number(req.query.days || 30);
+    const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const col = getDb().collection("analytics_events");
-    const [byEvent, topPages] = await Promise.all([
+    const match = { createdAt: { $gte: since } };
+    const [byEvent, topPages, byCampaign, byMedium] = await Promise.all([
       col.aggregate([
-        { $match: { createdAt: { $gte: since } } },
+        { $match: match },
         { $group: { _id: "$event", count: { $sum: 1 } } },
       ]).toArray(),
       col.aggregate([
@@ -36,8 +49,30 @@ router.get("/admin/analytics", requireAdmin, async (req, res) => {
         { $sort: { count: -1 } },
         { $limit: 8 },
       ]).toArray(),
+      col.aggregate([
+        { $match: match },
+        { $group: {
+          _id: {
+            source: { $ifNull: ["$campaign.source", "direct"] },
+            medium: { $ifNull: ["$campaign.medium", "none"] },
+            name: { $ifNull: ["$campaign.name", "not_set"] },
+          },
+          pageViews: { $sum: { $cond: [{ $eq: ["$event", "page_view"] }, 1, 0] } },
+          toolStarts: { $sum: { $cond: [{ $eq: ["$event", "tool_started"] }, 1, 0] } },
+          toolCompletions: { $sum: { $cond: [{ $eq: ["$event", "tool_completed"] }, 1, 0] } },
+          leads: { $sum: { $cond: [{ $eq: ["$event", "quote_submitted"] }, 1, 0] } },
+          whatsappClicks: { $sum: { $cond: [{ $eq: ["$event", "whatsapp_click"] }, 1, 0] } },
+        } },
+        { $sort: { pageViews: -1 } },
+        { $limit: 30 },
+      ]).toArray(),
+      col.aggregate([
+        { $match: match },
+        { $group: { _id: { $ifNull: ["$campaign.medium", "none"] }, count: { $sum: 1 }, leads: { $sum: { $cond: [{ $eq: ["$event", "quote_submitted"] }, 1, 0] } } } },
+        { $sort: { count: -1 } },
+      ]).toArray(),
     ]);
-    return res.json({ ok: true, since, byEvent, topPages });
+    return res.json({ ok: true, days, since, byEvent, topPages, byCampaign, byMedium });
   } catch (error) {
     console.error("GET /api/admin/analytics error:", error);
     return res.status(500).json({ ok: false, message: "Erreur serveur" });

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO.jsx";
 import { apiUrl } from "../lib/api.js";
+import { trackEvent } from "../lib/analytics.js";
 
 const QUESTIONS = [
   { id: "site", category: "Présence numérique", text: "Votre entreprise dispose-t-elle d’un site professionnel, rapide et adapté au mobile ?" },
@@ -89,6 +90,7 @@ export default function AuditExpress() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data?.ok === false) throw new Error(data?.message || "Impossible d’envoyer le rapport.");
+      trackEvent("quote_submitted", "/audit-express");
       setSent(true);
     } catch (error) {
       setSendError(error?.message || "Une erreur est survenue.");
