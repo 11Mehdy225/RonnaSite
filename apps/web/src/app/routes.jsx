@@ -12,6 +12,9 @@ const RealisationDetail = lazy(() => import("../pages/RealisationDetail.jsx"));
 const AuditExpress = lazy(() => import("../pages/AuditExpress.jsx"));
 const DevisExpress = lazy(() => import("../pages/DevisExpress.jsx"));
 const CahierDesCharges = lazy(() => import("../pages/CahierDesCharges.jsx"));
+const DiagnosticVisibilite = lazy(() => import("../pages/DiagnosticVisibilite.jsx"));
+const CalculateurROI = lazy(() => import("../pages/CalculateurROI.jsx"));
+const PlanTransformation = lazy(() => import("../pages/PlanTransformation.jsx"));
 
 const AdminLogin = lazy(() => import("../components/admin/AdminLogin.jsx"));
 const AdminQuotes = lazy(() => import("../components/admin/AdminQuotes.jsx"));
@@ -72,6 +75,9 @@ export const routes = [
   { path: "/audit-express", element: <AuditExpress /> },
   { path: "/devis-express", element: <DevisExpress /> },
   { path: "/cahier-des-charges", element: <CahierDesCharges /> },
+  { path: "/diagnostic-visibilite", element: <DiagnosticVisibilite /> },
+  { path: "/calculateur-roi", element: <CalculateurROI /> },
+  { path: "/plan-transformation", element: <PlanTransformation /> },
   { path: "/contact", element: <Contact /> },
   { path: "/fondation", element: <Fondation /> }
 ];

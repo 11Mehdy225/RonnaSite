@@ -144,6 +144,30 @@ export default function Home() {
               </div>
               <Link to="/cahier-des-charges" style={styles.auditButton}>Créer mon document →</Link>
             </div>
+            <div className="rg-home-audit" style={{...styles.auditCard,...styles.visibilityCard}}>
+              <div>
+                <div style={styles.kicker}>Visibilité en ligne</div>
+                <h2 style={styles.auditTitle}>Évaluez votre présence numérique.</h2>
+                <p style={styles.auditText}>Un score et des priorités pour être mieux trouvé et convertir davantage.</p>
+              </div>
+              <Link to="/diagnostic-visibilite" style={styles.auditButton}>Lancer le diagnostic →</Link>
+            </div>
+            <div className="rg-home-audit" style={{...styles.auditCard,...styles.roiCard}}>
+              <div>
+                <div style={styles.kicker}>Rentabilité digitale</div>
+                <h2 style={styles.auditTitle}>Calculez le ROI de votre projet.</h2>
+                <p style={styles.auditText}>Estimez les gains, le retour sur investissement et le délai de récupération.</p>
+              </div>
+              <Link to="/calculateur-roi" style={styles.auditButton}>Calculer mon ROI →</Link>
+            </div>
+            <div className="rg-home-audit" style={{...styles.auditCard,...styles.planCard}}>
+              <div>
+                <div style={styles.kicker}>Feuille de route</div>
+                <h2 style={styles.auditTitle}>Créez votre plan de transformation.</h2>
+                <p style={styles.auditText}>Des priorités, des étapes et des indicateurs adaptés à votre entreprise.</p>
+              </div>
+              <Link to="/plan-transformation" style={styles.auditButton}>Générer mon plan →</Link>
+            </div>
           </div>
         </div>
       </section>
@@ -277,6 +301,9 @@ const styles = {
   auditCard: { padding: "26px", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "space-between", gap: 24, borderRadius: 24, border: "1px solid rgba(112,149,244,.28)", background: "linear-gradient(120deg,rgba(31,79,216,.2),rgba(255,255,255,.035))" },
   devisCard: { background: "linear-gradient(120deg,rgba(17,107,146,.2),rgba(255,255,255,.035))", borderColor: "rgba(87,184,224,.25)" },
   specCard: { background: "linear-gradient(120deg,rgba(75,48,170,.2),rgba(255,255,255,.035))", borderColor: "rgba(142,122,235,.25)" },
+  visibilityCard: { background: "linear-gradient(120deg,rgba(13,126,107,.2),rgba(255,255,255,.035))", borderColor: "rgba(72,196,164,.25)" },
+  roiCard: { background: "linear-gradient(120deg,rgba(139,87,15,.2),rgba(255,255,255,.035))", borderColor: "rgba(229,170,75,.25)" },
+  planCard: { background: "linear-gradient(120deg,rgba(131,41,93,.2),rgba(255,255,255,.035))", borderColor: "rgba(218,105,170,.25)" },
   auditTitle: { maxWidth: 680, margin: "7px 0 8px", fontSize: "clamp(23px,3vw,34px)" },
   auditText: { margin: 0, color: "rgba(255,255,255,.68)", lineHeight: 1.6 },
   auditButton: { flexShrink: 0, padding: "13px 16px", borderRadius: 999, background: "#1f4fd8", border: "1px solid rgba(255,255,255,.14)", color: "white", fontWeight: 800, textDecoration: "none" },
