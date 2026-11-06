@@ -11,6 +11,7 @@ const Fondation = lazy(() => import("../pages/Fondation.jsx"));
 const RealisationDetail = lazy(() => import("../pages/RealisationDetail.jsx"));
 const AuditExpress = lazy(() => import("../pages/AuditExpress.jsx"));
 const DevisExpress = lazy(() => import("../pages/DevisExpress.jsx"));
+const CahierDesCharges = lazy(() => import("../pages/CahierDesCharges.jsx"));
 
 const AdminLogin = lazy(() => import("../components/admin/AdminLogin.jsx"));
 const AdminQuotes = lazy(() => import("../components/admin/AdminQuotes.jsx"));
@@ -70,6 +71,7 @@ export const routes = [
   { path: "/realisations/:slug", element: <RealisationDetail /> },
   { path: "/audit-express", element: <AuditExpress /> },
   { path: "/devis-express", element: <DevisExpress /> },
+  { path: "/cahier-des-charges", element: <CahierDesCharges /> },
   { path: "/contact", element: <Contact /> },
   { path: "/fondation", element: <Fondation /> }
 ];
