@@ -11,11 +11,15 @@ export default function AnalyticsTracker() {
   useEffect(() => {
     if (!pathname.startsWith("/admin")) {
       trackEvent("page_view", pathname);
-      if (TOOL_PATHS.has(pathname)) trackEvent("tool_started", pathname);
     }
   }, [pathname]);
 
   useEffect(() => {
+    const onInteraction = (event) => {
+      const field = event.target.closest?.("input, select, textarea");
+      if (!field || field.type === "hidden" || field.getAttribute("aria-hidden") === "true") return;
+      if (TOOL_PATHS.has(window.location.pathname)) trackEvent("tool_started", window.location.pathname);
+    };
     const onClick = (event) => {
       const link = event.target.closest?.("a[href]");
       if (link) {
@@ -31,8 +35,12 @@ export default function AnalyticsTracker() {
         trackEvent("tool_completed", window.location.pathname);
       }
     };
+    document.addEventListener("change", onInteraction, true);
     document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
+    return () => {
+      document.removeEventListener("change", onInteraction, true);
+      document.removeEventListener("click", onClick);
+    };
   }, []);
 
   return null;

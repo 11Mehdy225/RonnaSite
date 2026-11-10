@@ -32,6 +32,7 @@ export async function connectMongo() {
         nextDb.collection("admin_activity").createIndex({ createdAt: -1 }),
         nextDb.collection("analytics_events").createIndex({ createdAt: 1 }, { expireAfterSeconds: 34560000 }),
         nextDb.collection("analytics_events").createIndex({ event: 1, createdAt: -1 }),
+        nextDb.collection("analytics_events").createIndex({ dedupeKey: 1 }, { unique: true, sparse: true }),
       ]).catch((indexError) => console.warn("MongoDB indexes warning:", indexError?.message || indexError));
       client = nextClient;
       db = nextDb;
