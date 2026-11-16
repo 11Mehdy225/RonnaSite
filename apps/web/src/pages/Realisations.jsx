@@ -20,10 +20,11 @@ const AUDIT_EXPRESS = {
 };
 
 const GBORO_PROJECT = {
-  title: "GBORO — L'innovation numérique au service du football ivoirien.",
+  title: "GBORO",
+  subtitle: "Le football ivoirien à portée de main.",
   slug: "gboro",
-  category: "SportTech",
-  excerpt: "GBORO est un écosystème SportTech conçu et développé par Ronna Group. Il réunit une application mobile de suivi du football ivoirien, une plateforme d'administration des données sportives et une application destinée aux correspondants terrain.",
+  category: "SportTech · Application mobile · Plateforme web",
+  excerpt: "Un écosystème conçu par Ronna Group pour suivre le football ivoirien, administrer ses données sportives et connecter les correspondants terrain.",
   coverImage: "/realisations/gboro/gboro-mobile.webp"
 };
 
@@ -34,7 +35,7 @@ function projectMeta(project) {
   if (project.slug === "gboro") {
     return {
       status: "En préparation de lancement",
-      type: "Écosystème SportTech",
+      type: "Mobile & plateforme web",
       sector: "Football ivoirien"
     };
   }
@@ -72,7 +73,7 @@ function ProjectShowcase({ project, index }) {
 
   return (
     <article
-      className={`rg-work__project${index % 2 ? " rg-work__project--reverse" : ""}`}
+      className={`rg-work__project${index % 2 ? " rg-work__project--reverse" : ""}${project.slug === "gboro" ? " rg-work__project--featured" : ""}`}
       onClick={openDetail}
       onKeyDown={onKeyDown}
       role="link"
@@ -104,6 +105,7 @@ function ProjectShowcase({ project, index }) {
       <div className="rg-work__copy">
         <span className="rg-work__category">{project.category || "Projet digital"}</span>
         <h2>{project.title}</h2>
+        {project.subtitle && <h3 className="rg-work__subtitle">{project.subtitle}</h3>}
         <p>{project.excerpt}</p>
 
         <div className="rg-work__facts" aria-label="Informations sur le projet">
@@ -267,15 +269,17 @@ const css = `
 .rg-work__hero-note > span { color: rgba(126,162,255,.92); font-size: 38px; font-weight: 950; line-height: 1; }
 .rg-work__hero-note p { margin: 0; color: rgba(255,255,255,.48); font-size: 11px; line-height: 1.4; text-transform: uppercase; letter-spacing: .7px; }
 .rg-work__portfolio { max-width: 1164px; min-height: 320px; margin: 0 auto; padding: 42px 28px 80px; display: grid; gap: 28px; }
-.rg-work__project { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(330px, .88fr); min-height: 470px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); border-radius: 28px; background: rgba(255,255,255,.035); cursor: pointer; transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+.rg-work__project { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(330px, .88fr); min-height: 470px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); border-radius: 28px; background: rgba(255,255,255,.035); cursor: pointer; transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
 .rg-work__project--reverse { grid-template-columns: minmax(330px, .88fr) minmax(0, 1.12fr); }
 .rg-work__project--reverse .rg-work__visual { order: 2; }
 .rg-work__project:hover { transform: translateY(-4px); border-color: rgba(125,160,255,.36); box-shadow: 0 28px 80px rgba(0,0,0,.25); }
 .rg-work__project:focus-visible { outline: 2px solid #82a7ff; outline-offset: 4px; }
 .rg-work__visual { position: relative; min-height: 470px; overflow: hidden; background: radial-gradient(circle at 25% 25%, rgba(53,98,218,.78), transparent 40%), linear-gradient(135deg, #0a1e49, #061025); }
 .rg-work__visual::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(3,10,26,.42)); pointer-events: none; }
-.rg-work__visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.rg-work__visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .25s ease; }
 .rg-work__project:hover .rg-work__visual img { transform: scale(1.025); }
+.rg-work__project--featured .rg-work__visual { background: #071b14; }
+.rg-work__project--featured .rg-work__visual img { object-fit: contain; }
 .rg-work__visual-mark { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.1); font-size: 90px; font-weight: 950; letter-spacing: 10px; }
 .rg-work__audit-preview { position:absolute;z-index:1;inset:15%;padding:30px;display:flex;flex-direction:column;justify-content:center;border:1px solid rgba(255,255,255,.16);border-radius:24px;background:linear-gradient(145deg,rgba(31,79,216,.72),rgba(5,18,45,.92));box-shadow:0 28px 70px rgba(0,0,0,.28);transform:rotate(-2deg)}
 .rg-work__audit-preview>span{color:rgba(255,255,255,.68);font-size:11px;letter-spacing:1.2px;text-transform:uppercase}.rg-work__audit-preview>strong{margin:14px 0 18px;font-size:72px;line-height:.85}.rg-work__audit-preview small{font-size:15px;color:rgba(255,255,255,.55)}.rg-work__audit-preview i{height:7px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.12)}.rg-work__audit-preview b{display:block;width:78%;height:100%;border-radius:inherit;background:#8bb0ff}.rg-work__audit-preview p{margin:14px 0 0;color:rgba(255,255,255,.75);font-size:13px}
@@ -285,6 +289,7 @@ const css = `
 .rg-work__copy { padding: clamp(32px, 5vw, 58px); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
 .rg-work__category { color: #88aaff; font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; }
 .rg-work__copy h2 { margin: 13px 0 16px; font-size: clamp(30px, 4vw, 48px); line-height: 1.05; letter-spacing: -1.4px; }
+.rg-work__subtitle { margin: -5px 0 15px; color: rgba(255,255,255,.9); font-size: clamp(18px, 2.3vw, 26px); line-height: 1.2; letter-spacing: -.4px; }
 .rg-work__copy > p { display: -webkit-box; overflow: hidden; margin: 0; color: rgba(255,255,255,.68); font-size: 15px; line-height: 1.75; white-space: pre-line; -webkit-box-orient: vertical; -webkit-line-clamp: 6; }
 .rg-work__facts { width: 100%; margin-top: 27px; padding-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; border-top: 1px solid rgba(255,255,255,.09); }
 .rg-work__facts div { display: grid; gap: 5px; }
@@ -351,5 +356,10 @@ const css = `
 }
 @media (max-width: 380px) {
   .rg-work__actions { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rg-work__project, .rg-work__visual img, .rg-work__actions a span { transition: none; }
+  .rg-work__project:hover { transform: none; }
+  .rg-work__project:hover .rg-work__visual img { transform: none; }
 }
 `;
