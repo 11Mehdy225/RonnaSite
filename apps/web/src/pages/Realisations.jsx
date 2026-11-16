@@ -19,14 +19,22 @@ const AUDIT_EXPRESS = {
   internalUrl: "/audit-express"
 };
 
+const GBORO_PROJECT = {
+  title: "GBORO — L'innovation numérique au service du football ivoirien.",
+  slug: "gboro",
+  category: "SportTech",
+  excerpt: "GBORO est un écosystème SportTech conçu et développé par Ronna Group. Il réunit une application mobile de suivi du football ivoirien, une plateforme d'administration des données sportives et une application destinée aux correspondants terrain.",
+  coverImage: "/realisations/gboro/gboro-mobile.webp"
+};
+
 function projectMeta(project) {
   if (project.slug === "audit-express") {
     return { status: "Outil disponible", type: "Diagnostic interactif", sector: "Entreprises & organisations" };
   }
   if (project.slug === "gboro") {
     return {
-      status: "Produit en évolution",
-      type: "Application sportive",
+      status: "En préparation de lancement",
+      type: "Écosystème SportTech",
       sector: "Football ivoirien"
     };
   }
@@ -140,6 +148,7 @@ export default function Realisations() {
         if (!cancelled) {
           const projects = [...(data.items || [])]
             .filter((project) => project.slug !== "application-gestion-de-caisse-restaurant")
+            .map((project) => project.slug === "gboro" ? { ...project, ...GBORO_PROJECT } : project)
             .sort((a, b) => {
             if (a.slug === "gboro") return -1;
             if (b.slug === "gboro") return 1;
