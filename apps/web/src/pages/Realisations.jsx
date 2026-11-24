@@ -28,6 +28,16 @@ const GBORO_PROJECT = {
   coverImage: "/realisations/gboro/gboro-mobile.webp"
 };
 
+const JALONIS_PROJECT = {
+  _id: "jalonis",
+  title: "Jalonis",
+  subtitle: "Pilotez vos projets, vos équipes et vos décisions dans un même espace.",
+  slug: "jalonis",
+  category: "SaaS · Gestion de projet · Collaboration",
+  excerpt: "Jalonis est une plateforme SaaS de gestion de projet hybride qui centralise la planification, les équipes, les sprints, les coûts, les risques, les fournisseurs et les décisions.",
+  coverImage: "/realisations/jalonis/jalonis-accueil.png"
+};
+
 function projectMeta(project) {
   if (project.slug === "audit-express") {
     return { status: "Outil disponible", type: "Diagnostic interactif", sector: "Entreprises & organisations" };
@@ -37,6 +47,13 @@ function projectMeta(project) {
       status: "En préparation de lancement",
       type: "Mobile & plateforme web",
       sector: "Football ivoirien"
+    };
+  }
+  if (project.slug === "jalonis") {
+    return {
+      status: "Disponible en ligne",
+      type: "Plateforme SaaS hybride",
+      sector: "Gestion de projet"
     };
   }
 
@@ -73,7 +90,7 @@ function ProjectShowcase({ project, index }) {
 
   return (
     <article
-      className={`rg-work__project${index % 2 ? " rg-work__project--reverse" : ""}${project.slug === "gboro" ? " rg-work__project--featured" : ""}`}
+      className={`rg-work__project${index % 2 ? " rg-work__project--reverse" : ""}${project.slug === "gboro" ? " rg-work__project--featured" : ""}${project.slug === "jalonis" ? " rg-work__project--jalonis" : ""}`}
       onClick={openDetail}
       onKeyDown={onKeyDown}
       role="link"
@@ -150,13 +167,19 @@ export default function Realisations() {
         if (!cancelled) {
           const projects = [...(data.items || [])]
             .filter((project) => project.slug !== "application-gestion-de-caisse-restaurant")
-            .map((project) => project.slug === "gboro" ? { ...project, ...GBORO_PROJECT } : project)
+            .map((project) => {
+              if (project.slug === "gboro") return { ...project, ...GBORO_PROJECT };
+              if (project.slug === "jalonis") return { ...project, ...JALONIS_PROJECT };
+              return project;
+            })
             .sort((a, b) => {
-            if (a.slug === "gboro") return -1;
-            if (b.slug === "gboro") return 1;
-            return 0;
-          });
-          setItems([...projects, AUDIT_EXPRESS]);
+              const order = { jalonis: 0, gboro: 1 };
+              return (order[a.slug] ?? 2) - (order[b.slug] ?? 2);
+            });
+          const portfolioProjects = projects.some((project) => project.slug === "jalonis")
+            ? projects
+            : [JALONIS_PROJECT, ...projects];
+          setItems([...portfolioProjects, AUDIT_EXPRESS]);
         }
       } catch (loadError) {
         if (!cancelled) setError(loadError?.message || "Une erreur réseau est survenue.");
@@ -280,6 +303,7 @@ const css = `
 .rg-work__project:hover .rg-work__visual img { transform: scale(1.025); }
 .rg-work__project--featured .rg-work__visual { background: #071b14; }
 .rg-work__project--featured .rg-work__visual img { object-fit: contain; }
+.rg-work__project--jalonis .rg-work__visual { background: #0d1530; }
 .rg-work__visual-mark { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,.1); font-size: 90px; font-weight: 950; letter-spacing: 10px; }
 .rg-work__audit-preview { position:absolute;z-index:1;inset:15%;padding:30px;display:flex;flex-direction:column;justify-content:center;border:1px solid rgba(255,255,255,.16);border-radius:24px;background:linear-gradient(145deg,rgba(31,79,216,.72),rgba(5,18,45,.92));box-shadow:0 28px 70px rgba(0,0,0,.28);transform:rotate(-2deg)}
 .rg-work__audit-preview>span{color:rgba(255,255,255,.68);font-size:11px;letter-spacing:1.2px;text-transform:uppercase}.rg-work__audit-preview>strong{margin:14px 0 18px;font-size:72px;line-height:.85}.rg-work__audit-preview small{font-size:15px;color:rgba(255,255,255,.55)}.rg-work__audit-preview i{height:7px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.12)}.rg-work__audit-preview b{display:block;width:78%;height:100%;border-radius:inherit;background:#8bb0ff}.rg-work__audit-preview p{margin:14px 0 0;color:rgba(255,255,255,.75);font-size:13px}
