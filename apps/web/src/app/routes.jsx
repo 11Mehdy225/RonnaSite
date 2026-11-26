@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import { Navigate } from "react-router-dom";
 
 const Home = lazy(() => import("../pages/Home.jsx"));
 const Contact = lazy(() => import("../pages/Contact.jsx"));
@@ -10,7 +11,7 @@ const ActualiteDetail = lazy(() => import("../pages/ActualiteDetail.jsx"));
 const Fondation = lazy(() => import("../pages/Fondation.jsx"));
 const RealisationDetail = lazy(() => import("../pages/RealisationDetail.jsx"));
 const GboroDetail = lazy(() => import("../pages/GboroDetail.jsx"));
-const JalonisDetail = lazy(() => import("../pages/JalonisDetail.jsx"));
+const KavelyoDetail = lazy(() => import("../pages/KavelyoDetail.jsx"));
 const AuditExpress = lazy(() => import("../pages/AuditExpress.jsx"));
 const DevisExpress = lazy(() => import("../pages/DevisExpress.jsx"));
 const CahierDesCharges = lazy(() => import("../pages/CahierDesCharges.jsx"));
@@ -77,7 +78,8 @@ export const routes = [
   { path: "/actualites/:slug", element: <ActualiteDetail /> },
   { path: "/realisations", element: <Realisations /> },
   { path: "/realisations/gboro", element: <GboroDetail /> },
-  { path: "/realisations/jalonis", element: <JalonisDetail /> },
+  { path: "/realisations/kavelyo", element: <KavelyoDetail /> },
+  { path: "/realisations/jalonis", element: <Navigate to="/realisations/kavelyo" replace /> },
   { path: "/realisations/:slug", element: <RealisationDetail /> },
   { path: "/audit-express", element: <AuditExpress /> },
   { path: "/devis-express", element: <DevisExpress /> },

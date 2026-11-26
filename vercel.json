@@ -8,6 +8,13 @@
       "maxDuration": 30
     }
   },
+  "redirects": [
+    {
+      "source": "/realisations/jalonis",
+      "destination": "/realisations/kavelyo",
+      "statusCode": 301
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",

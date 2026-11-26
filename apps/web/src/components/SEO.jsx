@@ -7,9 +7,10 @@ export default function SEO({
   image = "/favicon.PNG",
   type = "website",
   structuredData,
+  keywords,
 }) {
   const siteUrl = "https://www.ronnagroup.net";
-  const fullTitle = title.includes("RONNA") ? title : `${title} | RONNA GROUP`;
+  const fullTitle = title.toUpperCase().includes("RONNA") ? title : `${title} | RONNA GROUP`;
   const fullImage = image.startsWith("http") ? image : `${siteUrl}${image.startsWith("/") ? image : `/${image}`}`;
   const schema = structuredData || {
     "@context": "https://schema.org",
@@ -38,6 +39,7 @@ export default function SEO({
     <Helmet>
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
+      {keywords && <meta name="keywords" content={keywords} />}
       {import.meta.env.VITE_GOOGLE_SITE_VERIFICATION && (
         <meta name="google-site-verification" content={import.meta.env.VITE_GOOGLE_SITE_VERIFICATION} />
       )}
