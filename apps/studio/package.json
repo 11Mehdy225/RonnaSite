@@ -4,15 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch server.mjs",
+    "dev": "npm run build && node --watch server.mjs",
     "start": "node server.mjs",
-    "build": "node scripts/validate.mjs",
+    "build": "esbuild public/app.js --bundle --format=iife --outfile=public/app.bundle.js --minify && node scripts/validate.mjs",
     "lint": "node --check server.mjs && node --check config/events.mjs && node --check public/app.js && node --check public/admin.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.922.0",
     "@aws-sdk/s3-request-presigner": "^3.922.0",
+    "@vercel/blob": "^2.9.0",
     "dotenv": "^17.2.3",
+    "esbuild": "^0.27.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",

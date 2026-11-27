@@ -2,6 +2,7 @@ import "dotenv/config";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 import express from "express";
@@ -16,12 +17,18 @@ import {
   S3Client
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { get as getBlob, head as headBlob, list as listBlobs, put as putBlob } from "@vercel/blob";
+import { handleUpload } from "@vercel/blob/client";
 import { EVENTS, getEvent, publicEvent } from "./config/events.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = Number(process.env.PORT || 4173);
-const STORAGE_MODE = process.env.STORAGE_MODE === "s3" ? "s3" : "local";
+const STORAGE_MODE = process.env.STORAGE_MODE === "s3"
+  ? "s3"
+  : process.env.STORAGE_MODE === "vercel-blob" || process.env.VERCEL
+    ? "vercel-blob"
+    : "local";
 const LOCAL_STORAGE_DIR = path.resolve(process.env.LOCAL_STORAGE_DIR || path.join(__dirname, ".local-storage"));
 const SIGNING_SECRET = process.env.UPLOAD_SIGNING_SECRET || "local-development-secret-change-me";
 const ADMIN_TOKEN = process.env.ADMIN_ACCESS_TOKEN || "local-admin-token";
@@ -134,13 +141,16 @@ async function streamToString(stream) {
 }
 
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "ronna-studio-collecte", storage: STORAGE_MODE, configured: STORAGE_MODE === "local" || Boolean(BUCKET) });
+  const configured = STORAGE_MODE === "local"
+    || (STORAGE_MODE === "s3" && Boolean(BUCKET))
+    || (STORAGE_MODE === "vercel-blob" && Boolean(process.env.BLOB_STORE_ID && process.env.BLOB_READ_WRITE_TOKEN));
+  res.json({ ok: true, service: "ronna-studio-collecte", storage: STORAGE_MODE, configured });
 });
 
 app.get("/api/events/:slug", (req, res) => {
   const event = getEvent(req.params.slug);
   if (!event) return res.status(404).json({ ok: false, message: "Cette collecte n’est pas disponible." });
-  res.json({ ok: true, event: publicEvent(event) });
+  res.json({ ok: true, event: { ...publicEvent(event), uploadMode: STORAGE_MODE } });
 });
 
 app.post("/api/uploads/presign", uploadLimiter, async (req, res, next) => {
@@ -173,6 +183,11 @@ app.post("/api/uploads/presign", uploadLimiter, async (req, res, next) => {
     };
     const receipt = encodeReceipt(payload);
 
+    if (STORAGE_MODE === "vercel-blob") {
+      if (!process.env.BLOB_STORE_ID || !process.env.BLOB_READ_WRITE_TOKEN) throw new Error("STORAGE_NOT_CONFIGURED");
+      return res.json({ ok: true, uploadMode: "vercel-blob", pathname: objectKey, contentType, receipt });
+    }
+
     if (STORAGE_MODE === "s3") {
       if (!BUCKET) throw new Error("STORAGE_NOT_CONFIGURED");
       const command = new PutObjectCommand({ Bucket: BUCKET, Key: objectKey, ContentType: contentType });
@@ -184,6 +199,37 @@ app.post("/api/uploads/presign", uploadLimiter, async (req, res, next) => {
     res.json({ ok: true, uploadUrl, method: "PUT", contentType, receipt });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ ok: false, message: "Les informations de la vidéo sont invalides." });
+    next(error);
+  }
+});
+
+app.post("/api/uploads/vercel-blob", uploadLimiter, async (req, res, next) => {
+  try {
+    if (STORAGE_MODE !== "vercel-blob") return res.status(404).end();
+    const response = await handleUpload({
+      body: req.body,
+      request: req,
+      onBeforeGenerateToken: async (pathname, clientPayload) => {
+        const payload = decodeReceipt(clientPayload || "");
+        const event = getEvent(payload.eventSlug);
+        if (!event || pathname !== payload.objectKey || !pathname.startsWith(`${event.storagePrefix}/videos/`)) {
+          throw new Error("RECEIPT_INVALID");
+        }
+        return {
+          allowedContentTypes: [payload.contentType],
+          maximumSizeInBytes: event.maxBytes,
+          addRandomSuffix: false,
+          allowOverwrite: false,
+          tokenPayload: clientPayload
+        };
+      },
+      onUploadCompleted: async () => {}
+    });
+    res.json(response);
+  } catch (error) {
+    if (["RECEIPT_INVALID", "RECEIPT_EXPIRED"].includes(error.message)) {
+      return res.status(400).json({ ok: false, message: "L’autorisation d’envoi n’est plus valide. Recommencez l’envoi." });
+    }
     next(error);
   }
 });
@@ -220,7 +266,10 @@ app.post("/api/uploads/confirm", uploadLimiter, async (req, res, next) => {
     if (!event || !payload.objectKey.startsWith(`${event.storagePrefix}/videos/`)) throw new Error("RECEIPT_INVALID");
 
     let storedSize = 0;
-    if (STORAGE_MODE === "s3") {
+    if (STORAGE_MODE === "vercel-blob") {
+      const metadata = await headBlob(payload.objectKey);
+      storedSize = Number(metadata.size || 0);
+    } else if (STORAGE_MODE === "s3") {
       const head = await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: payload.objectKey }));
       storedSize = Number(head.ContentLength || 0);
     } else {
@@ -242,7 +291,14 @@ app.post("/api/uploads/confirm", uploadLimiter, async (req, res, next) => {
     };
     const recordKey = `${event.storagePrefix}/records/${payload.uploadId}.json`;
 
-    if (STORAGE_MODE === "s3") {
+    if (STORAGE_MODE === "vercel-blob") {
+      await putBlob(recordKey, JSON.stringify(record), {
+        access: "private",
+        contentType: "application/json",
+        addRandomSuffix: false,
+        allowOverwrite: true
+      });
+    } else if (STORAGE_MODE === "s3") {
       await s3.send(new PutObjectCommand({
         Bucket: BUCKET,
         Key: recordKey,
@@ -274,7 +330,14 @@ app.get("/api/admin/uploads", adminLimiter, async (req, res, next) => {
     if (!event) return res.status(404).json({ ok: false, message: "Événement introuvable." });
 
     const records = [];
-    if (STORAGE_MODE === "s3") {
+    if (STORAGE_MODE === "vercel-blob") {
+      const listed = await listBlobs({ prefix: `${event.storagePrefix}/records/`, limit: 200 });
+      for (const object of listed.blobs || []) {
+        if (!object.pathname.endsWith(".json")) continue;
+        const response = await getBlob(object.pathname, { access: "private" });
+        if (response?.stream) records.push(JSON.parse(await streamToString(Readable.fromWeb(response.stream))));
+      }
+    } else if (STORAGE_MODE === "s3") {
       const listed = await s3.send(new ListObjectsV2Command({ Bucket: BUCKET, Prefix: `${event.storagePrefix}/records/`, MaxKeys: 200 }));
       for (const object of listed.Contents || []) {
         if (!object.Key?.endsWith(".json")) continue;
@@ -304,23 +367,39 @@ app.get("/api/admin/uploads", adminLimiter, async (req, res, next) => {
 
 app.get("/api/admin/download/:uploadId", adminLimiter, async (req, res, next) => {
   try {
-    if (STORAGE_MODE !== "local") return res.status(404).end();
+    if (!["local", "vercel-blob"].includes(STORAGE_MODE)) return res.status(404).end();
     if (!adminAuthorized(req)) return res.status(401).json({ ok: false, message: "Accès administrateur refusé." });
     const event = getEvent(String(req.query.event || ""));
     if (!event) return res.status(404).end();
-    const recordPath = path.join(LOCAL_STORAGE_DIR, event.storagePrefix, "records", `${req.params.uploadId}.json`);
-    const record = JSON.parse(await fs.promises.readFile(recordPath, "utf8"));
-    const videoRoot = path.resolve(LOCAL_STORAGE_DIR, event.storagePrefix, "videos");
-    const videoPath = path.resolve(LOCAL_STORAGE_DIR, record.objectKey);
-    if (!videoPath.startsWith(`${videoRoot}${path.sep}`)) return res.status(400).json({ ok: false, message: "Chemin de vidéo invalide." });
-
-    const stat = await fs.promises.stat(videoPath);
+    let record;
+    if (STORAGE_MODE === "vercel-blob") {
+      const recordKey = `${event.storagePrefix}/records/${req.params.uploadId}.json`;
+      const result = await getBlob(recordKey, { access: "private", useCache: false });
+      if (!result?.stream) return res.status(404).end();
+      record = JSON.parse(await streamToString(Readable.fromWeb(result.stream)));
+    } else {
+      const recordPath = path.join(LOCAL_STORAGE_DIR, event.storagePrefix, "records", `${req.params.uploadId}.json`);
+      record = JSON.parse(await fs.promises.readFile(recordPath, "utf8"));
+    }
     const downloadName = String(record.originalFilename || `${record.uploadId}.mp4`);
     const encodedName = encodeURIComponent(downloadName).replace(/['()*]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
     res.setHeader("Content-Type", record.contentType || "application/octet-stream");
-    res.setHeader("Content-Length", String(stat.size));
     res.setHeader("Content-Disposition", `attachment; filename*=UTF-8''${encodedName}`);
-    await pipeline(fs.createReadStream(videoPath), res);
+    res.setHeader("Cache-Control", "private, no-store");
+
+    if (STORAGE_MODE === "vercel-blob") {
+      const result = await getBlob(record.objectKey, { access: "private", useCache: false });
+      if (!result?.stream) return res.status(404).end();
+      if (result.blob?.contentType) res.setHeader("Content-Type", result.blob.contentType);
+      await pipeline(Readable.fromWeb(result.stream), res);
+    } else {
+      const videoRoot = path.resolve(LOCAL_STORAGE_DIR, event.storagePrefix, "videos");
+      const videoPath = path.resolve(LOCAL_STORAGE_DIR, record.objectKey);
+      if (!videoPath.startsWith(`${videoRoot}${path.sep}`)) return res.status(400).json({ ok: false, message: "Chemin de vidéo invalide." });
+      const stat = await fs.promises.stat(videoPath);
+      res.setHeader("Content-Length", String(stat.size));
+      await pipeline(fs.createReadStream(videoPath), res);
+    }
   } catch (error) {
     next(error);
   }
@@ -343,10 +422,11 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ ok: false, message });
 });
 
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`[studio] http://localhost:${PORT} · stockage ${STORAGE_MODE}`);
   });
 }
 
 export { app, EVENTS };
+export default app;

@@ -1,3 +1,5 @@
+import { upload as uploadBlob } from "@vercel/blob/client";
+
 const form = document.querySelector("#upload-form");
 const fileInput = document.querySelector("#video-file");
 const dropZone = document.querySelector("#drop-zone");
@@ -152,7 +154,19 @@ form.addEventListener("submit", async (event) => {
       })
     });
 
-    await uploadWithProgress(prepared.uploadUrl, selectedFile, prepared.contentType);
+    if (prepared.uploadMode === "vercel-blob") {
+      const blob = await uploadBlob(prepared.pathname, selectedFile, {
+        access: "private",
+        handleUploadUrl: "/api/uploads/vercel-blob",
+        clientPayload: prepared.receipt,
+        contentType: prepared.contentType,
+        multipart: selectedFile.size > 100 * 1024 * 1024,
+        onUploadProgress: ({ percentage }) => setProgress(percentage)
+      });
+      if (blob.pathname !== prepared.pathname) throw new Error("Le stockage n’a pas confirmé le chemin de la vidéo.");
+    } else {
+      await uploadWithProgress(prepared.uploadUrl, selectedFile, prepared.contentType);
+    }
     setProgress(100, "Vérification du stockage…");
 
     const confirmed = await jsonRequest("/api/uploads/confirm", {

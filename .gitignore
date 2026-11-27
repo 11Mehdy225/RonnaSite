@@ -9,6 +9,7 @@ dist
 uploads
 **/uploads
 **/.local-storage
+apps/studio/public/app.bundle.js
 !apps/web/public/uploads/
 !apps/web/public/uploads/**
 .DS_Store
