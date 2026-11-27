@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-labelledby="title desc">
+  <title id="title">La Rosée de l’Hermon</title>
+  <desc id="desc">Affiche bleu nuit et dorée de la collecte vidéo La Rosée de l’Hermon.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#11152b"/><stop offset=".52" stop-color="#24244e"/><stop offset="1" stop-color="#09131c"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#d7b879" stop-opacity=".75"/><stop offset="1" stop-color="#d7b879" stop-opacity="0"/></radialGradient>
+    <linearGradient id="gold" x1="0" x2="1"><stop stop-color="#b9914f"/><stop offset=".5" stop-color="#f2d49a"/><stop offset="1" stop-color="#a97d39"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="26"/></filter>
+  </defs>
+  <rect width="900" height="1200" fill="url(#bg)"/>
+  <circle cx="680" cy="230" r="250" fill="url(#glow)" filter="url(#blur)"/>
+  <g fill="none" stroke="#8bbbc1" stroke-opacity=".2">
+    <path d="M-80 820C180 650 350 720 520 610s330-120 520-30" stroke-width="3"/>
+    <path d="M-60 880c260-170 430-100 600-220s330-90 470-20"/>
+  </g>
+  <g transform="translate(450 250)">
+    <path d="M0-112C-80-12-142 62-142 144c0 81 64 145 142 145s142-64 142-145C142 62 80-12 0-112Z" fill="#8fc9d2" fill-opacity=".14" stroke="url(#gold)" stroke-width="3"/>
+    <path d="M0-62c-48 66-87 113-87 170 0 50 39 89 87 89" fill="none" stroke="#d8bf8d" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <text x="450" y="630" fill="#d6bf92" font-family="Georgia, serif" font-size="26" text-anchor="middle" letter-spacing="7">COLLECTE VIDÉO</text>
+  <text x="450" y="715" fill="#fff" font-family="Georgia, serif" font-size="72" text-anchor="middle">La Rosée</text>
+  <text x="450" y="790" fill="#fff" font-family="Georgia, serif" font-size="72" text-anchor="middle">de l’Hermon</text>
+  <path d="M290 835h320" stroke="url(#gold)" stroke-width="2"/>
+  <text x="450" y="900" fill="#d7d9e4" font-family="Arial, sans-serif" font-size="25" text-anchor="middle" letter-spacing="2">UN SOUVENIR PARTAGÉ</text>
+  <g transform="translate(110 1010)" fill="#fff">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="34" font-weight="700">RONNA</text>
+    <text x="2" y="28" font-family="Arial, sans-serif" font-size="13" letter-spacing="7">STUDIO</text>
+  </g>
+  <text x="790" y="1040" fill="#d6bf92" font-family="Arial, sans-serif" font-size="17" text-anchor="end">Portrait · 5 à 10 secondes</text>
+</svg>

@@ -597,7 +597,7 @@ const styles = {
   },
   tr: { borderBottom: "1px solid rgba(255,255,255,0.06)" },
   td: { padding: "12px 10px", verticalAlign: "top", color: "rgba(255,255,255,0.86)" },
-  tdMono: { padding: "12px 10px", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: "rgba(255,255,255,0.78)" },
+  tdMono: { padding: "12px 10px", color: "rgba(255,255,255,0.78)" },
 
   titleCell: { display: "flex", gap: 10, alignItems: "center", minWidth: 240 },
   thumb: { width: 44, height: 44, borderRadius: 12, objectFit: "cover", border: "1px solid rgba(255,255,255,0.10)" },

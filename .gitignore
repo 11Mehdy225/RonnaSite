@@ -8,6 +8,7 @@ dist
 **/dist
 uploads
 **/uploads
+**/.local-storage
 !apps/web/public/uploads/
 !apps/web/public/uploads/**
 .DS_Store

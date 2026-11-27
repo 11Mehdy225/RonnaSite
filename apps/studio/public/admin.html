@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Vidéos reçues — Ronna Studio</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/admin.js" defer></script>
+  </head>
+  <body class="admin-body">
+    <main class="admin-shell">
+      <header class="admin-header">
+        <img src="/assets/ronna-studio.jpg" alt="Ronna Studio" width="430" height="208" />
+        <div><p class="eyebrow">Espace de récupération</p><h1>Vidéos reçues</h1></div>
+      </header>
+
+      <section class="admin-access">
+        <label><span>Événement</span><select id="admin-event"><option value="rosee-de-l-hermon">La Rosée de l’Hermon</option></select></label>
+        <label><span>Clé d’accès administrateur</span><input id="admin-token" type="password" autocomplete="current-password" placeholder="Saisissez la clé Render" /></label>
+        <button id="load-uploads" class="submit-button" type="button">Afficher les vidéos</button>
+      </section>
+
+      <section class="admin-filters" aria-label="Tri des vidéos">
+        <label>
+          <span>Date</span>
+          <input id="admin-date-filter" type="date" />
+        </label>
+        <label>
+          <span>Ordre d’affichage</span>
+          <select id="admin-sort">
+            <option value="newest">Plus récentes d’abord</option>
+            <option value="oldest">Plus anciennes d’abord</option>
+          </select>
+        </label>
+        <button id="clear-date" type="button">Toutes les dates</button>
+      </section>
+
+      <div id="admin-message" class="status-message" role="status" hidden></div>
+      <section id="uploads-list" class="uploads-list" aria-live="polite"></section>
+    </main>
+  </body>
+</html>
