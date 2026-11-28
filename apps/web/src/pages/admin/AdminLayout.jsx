@@ -124,8 +124,8 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div style={styles.right}>
-        <main style={styles.main}>
+      <div className="rgAdminRight" style={styles.right}>
+        <main className="rgAdminMain" style={styles.main}>
           <Outlet />
         </main>
       </div>
@@ -139,12 +139,21 @@ export default function AdminLayout() {
         .rgAdminLink:active { transform: translateY(0px); }
 
         @media (max-width: 980px) {
-          .rgAdminShell { grid-template-columns: 1fr !important; }
+          .rgAdminShell {
+            width: 100% !important;
+            max-width: 100vw !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            overflow-x: hidden !important;
+          }
           .rgAdminSidebar {
-            position: sticky;
+            width: 100% !important;
+            max-width: 100vw !important;
+            box-sizing: border-box !important;
+            position: relative !important;
             top: 0;
             z-index: 40;
             height: auto !important;
+            overflow: hidden !important;
             border-right: none !important;
             border-bottom: 1px solid rgba(255,255,255,0.10) !important;
           }
@@ -155,6 +164,26 @@ export default function AdminLayout() {
             padding-bottom: 8px !important;
           }
           .rgAdminLink { white-space: nowrap; }
+          .rgAdminRight, .rgAdminMain {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100vw !important;
+            box-sizing: border-box !important;
+          }
+          .rgAdminSidebar > div:last-child {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+          }
+          .rgAdminSidebar > div:last-child > div:last-child {
+            grid-column: 1 / -1;
+            overflow-wrap: anywhere;
+          }
+        }
+        @media (max-width: 600px) {
+          .rgAdminSidebar { padding: 10px !important; }
+          .rgAdminSidebar > div:not(:first-child):not(:last-child) > div:first-child { display: none; }
+          .rgAdminNav { padding-bottom: 4px !important; }
+          .rgAdminLink { padding: 9px 11px !important; font-size: 13px; }
+          .rgAdminMain { padding: 14px 12px 48px !important; }
         }
       `}</style>
     </div>

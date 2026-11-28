@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { EVENTS } from "../config/events.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const required = ["public/index.html", "public/app.js", "public/app.bundle.js", "public/styles.css", "public/admin.html", "public/admin.js"];
+const required = ["public/index.html", "public/app.js", "public/app.bundle.js", "public/styles.css", "public/admin.html", "public/admin.js", "public/assets/ronna-studio-favicon.png"];
 
 for (const file of required) {
   if (!fs.existsSync(path.join(root, file))) throw new Error(`Fichier manquant: ${file}`);

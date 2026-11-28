@@ -418,14 +418,14 @@ const api = useCallback(
   };
 
   return (
-    <div style={styles.wrap}>
-      <div style={styles.top}>
+    <div className="rgAdminProjects" style={styles.wrap}>
+      <div className="rgAdminProjectsTop" style={styles.top}>
         <div>
           <h1 style={styles.h1}>Réalisations</h1>
           <div style={styles.sub}>Gérer les projets affichés dans “Nos réalisations”.</div>
         </div>
 
-        <div style={styles.actions}>
+        <div className="rgAdminProjectsActions" style={styles.actions}>
           <button type="button" style={styles.btnGhost} onClick={() => nav("/realisations")}>
             Voir page publique
           </button>
@@ -435,7 +435,7 @@ const api = useCallback(
         </div>
       </div>
 
-      <div style={styles.toolbar}>
+      <div className="rgAdminProjectsToolbar" style={styles.toolbar}>
         <div style={styles.filter}>
           <div style={styles.label}>Statut</div>
           <select value={status} onChange={(e) => setStatus(e.target.value)} style={styles.select}>
@@ -458,14 +458,14 @@ const api = useCallback(
         </div>
       )}
 
-      <div style={styles.card}>
+      <div className="rgAdminProjectsCard" style={styles.card}>
         {loading ? (
           <div style={styles.empty}>Chargement des réalisations…</div>
         ) : items.length === 0 ? (
           <div style={styles.empty}>Aucune réalisation pour ce filtre.</div>
         ) : (
-          <div style={styles.tableWrap}>
-            <table style={styles.table}>
+          <div className="rgAdminProjectsTableWrap" style={styles.tableWrap}>
+            <table className="rgAdminProjectsTable" style={styles.table}>
               <thead>
                 <tr>
                   <th style={styles.th}>Titre</th>
@@ -479,15 +479,15 @@ const api = useCallback(
                 {items.map((p) => (
                   <tr key={p._id} style={styles.tr}>
                     <td style={styles.td}>
-                      <div style={styles.titleCell}>
+                      <div className="rgAdminProjectsTitleCell" style={styles.titleCell}>
                         {p.coverImage ? (
                           <img src={p.coverImage} alt="" style={styles.thumb} />
                         ) : (
                           <div style={styles.thumbPlaceholder} />
                         )}
                         <div style={{ minWidth: 0 }}>
-                          <div style={styles.title}>{p.title || "—"}</div>
-                          <div style={styles.excerpt}>{p.excerpt || "—"}</div>
+                          <div className="rgAdminProjectsTitle" style={styles.title}>{p.title || "—"}</div>
+                          <div className="rgAdminProjectsExcerpt" style={styles.excerpt}>{p.excerpt || "—"}</div>
                         </div>
                       </div>
                     </td>
@@ -519,6 +519,29 @@ const api = useCallback(
       <div style={styles.small}>
         Astuce : publie uniquement quand c’est prêt — le site public n’affiche que <strong>published=true</strong>.
       </div>
+      <style>{`
+        @media (max-width: 700px) {
+          .rgAdminProjects { width: 100% !important; max-width: 100% !important; overflow: hidden; }
+          .rgAdminProjectsTop, .rgAdminProjectsToolbar { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; }
+          .rgAdminProjectsActions { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; width: 100%; }
+          .rgAdminProjectsActions > * { width: 100%; box-sizing: border-box; text-align: center; }
+          .rgAdminProjectsToolbar > button { width: 100%; box-sizing: border-box; }
+          .rgAdminProjectsCard { padding: 8px !important; overflow: hidden; }
+          .rgAdminProjectsTableWrap { width: 100%; max-width: 100%; overflow: hidden !important; }
+          .rgAdminProjectsTable, .rgAdminProjectsTable tbody, .rgAdminProjectsTable tr, .rgAdminProjectsTable td { display: block; width: 100%; box-sizing: border-box; }
+          .rgAdminProjectsTable thead { display: none; }
+          .rgAdminProjectsTable tr { margin-bottom: 10px; padding: 12px; border: 1px solid rgba(255,255,255,.10); border-radius: 16px; background: rgba(255,255,255,.025); }
+          .rgAdminProjectsTable td { padding: 7px 0 !important; }
+          .rgAdminProjectsTable td:nth-child(2), .rgAdminProjectsTable td:nth-child(4) { display: none; }
+          .rgAdminProjectsTitleCell { min-width: 0 !important; align-items: flex-start !important; }
+          .rgAdminProjectsTitle, .rgAdminProjectsExcerpt { max-width: calc(100vw - 126px) !important; white-space: normal !important; overflow-wrap: anywhere; }
+          .rgAdminProjectsTable td:last-child > div { width: 100%; }
+          .rgAdminProjectsTable td:last-child a, .rgAdminProjectsTable td:last-child button { flex: 1; text-align: center; }
+        }
+        @media (max-width: 430px) {
+          .rgAdminProjectsActions { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }
